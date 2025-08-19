@@ -44,7 +44,8 @@ class TestMainCli(unittest.TestCase):
             bg_color='#141618',
             text_color='#FFFFFF',
             font_path=None,
-            font_size=15
+            font_size=15,
+            no_email=False
         )
         mock_repo_instance.get_commit_history.assert_called_once_with(branch=None)
 
@@ -71,6 +72,26 @@ class TestMainCli(unittest.TestCase):
         ])
 
         mock_rmtree.assert_called_once_with('fake_temp_dir')
+
+    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--no-email'])
+    @patch('src.main.GitRepo')
+    @patch('src.main.FrameRenderer')
+    @patch('src.main.VideoEncoder')
+    @patch('src.main.tempfile.mkdtemp', return_value='fake_temp_dir')
+    @patch('src.main.shutil.rmtree')
+    def test_main_with_no_email_flag(self, mock_rmtree, mock_mkdtemp, mock_video_encoder, mock_frame_renderer, mock_git_repo):
+        # We only need to test that the `no_email` flag is passed correctly
+        mock_repo_instance = MagicMock()
+        mock_git_repo.return_value = mock_repo_instance
+        mock_repo_instance.get_commit_history.return_value = [{'hash': '123', 'commit_obj': MagicMock()}]
+        mock_repo_instance.get_file_tree_at_commit.return_value = {}
+
+        main.main()
+
+        mock_frame_renderer.assert_called_once()
+        # Get the keyword arguments passed to the FrameRenderer constructor
+        kwargs = mock_frame_renderer.call_args.kwargs
+        self.assertTrue(kwargs.get('no_email', False))
 
 if __name__ == '__main__':
     unittest.main()
