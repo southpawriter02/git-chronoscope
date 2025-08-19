@@ -1,24 +1,24 @@
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw, ImageFont, ImageColor
 
 class FrameRenderer:
     """
     A class to render a single frame of the time-lapse video.
     """
-    def __init__(self, width, height, bg_color=(20, 22, 24), text_color=(255, 255, 255), font_path=None, font_size=15):
+    def __init__(self, width, height, bg_color="#141618", text_color="#FFFFFF", font_path=None, font_size=15):
         """
         Initializes the FrameRenderer object.
 
         :param width: The width of the frame in pixels.
         :param height: The height of the frame in pixels.
-        :param bg_color: The background color of the frame.
-        :param text_color: The color of the text.
+        :param bg_color: The background color of the frame in hex format.
+        :param text_color: The color of the text in hex format.
         :param font_path: Path to a .ttf font file. If None, a default font will be used.
         :param font_size: The size of the font.
         """
         self.width = width
         self.height = height
-        self.bg_color = bg_color
-        self.text_color = text_color
+        self.bg_color = self._hex_to_rgb(bg_color)
+        self.text_color = self._hex_to_rgb(text_color)
 
         try:
             # This will raise an AttributeError if font_path is None
@@ -29,6 +29,20 @@ class FrameRenderer:
                 print(f"Warning: Font '{font_path}' not found or could not be loaded. Using default font.")
             self.font = ImageFont.load_default()
             self.font_header = self.font
+
+    def _hex_to_rgb(self, hex_color):
+        """
+        Converts a hex color string to an RGB tuple.
+        """
+        try:
+            return ImageColor.getrgb(hex_color)
+        except (ValueError, TypeError):
+            print(f"Warning: Invalid color '{hex_color}'. Using default color.")
+            # Return a default color (e.g., white for text, black for bg)
+            # This is a simple fallback, might need a more robust solution
+            if len(hex_color) > 4: # A simple check
+                return (255, 255, 255)
+            return (0, 0, 0)
 
     def render_frame(self, commit_info, file_tree):
         """
