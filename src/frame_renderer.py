@@ -44,26 +44,37 @@ class FrameRenderer:
                 return (255, 255, 255)
             return (0, 0, 0)
 
-    def render_frame(self, commit_info, file_tree):
+    def render_frame(self, commit_info, file_contents):
         """
-        Renders a single frame.
+        Renders a single frame, including commit info and file contents.
 
         :param commit_info: A dictionary containing the commit metadata.
-        :param file_tree: A list of file paths.
+        :param file_contents: A dictionary mapping file paths to their content.
         :return: A Pillow Image object.
         """
-        # Create a new image
         img = Image.new('RGB', (self.width, self.height), color=self.bg_color)
         draw = ImageDraw.Draw(img)
 
-        # --- Render Commit Info ---
-        x_padding = 20
+        x_padding = 30
         y_padding = 20
         line_spacing = 8
 
+        # --- 1. Render Header (Commit Info) ---
+        header_height = self._render_commit_info(draw, commit_info, x_padding, y_padding, line_spacing)
+
+        # --- 2. Render Content (File Tree and Code) ---
+        content_y_start = header_height
+        draw.line([(x_padding, content_y_start), (self.width - x_padding, content_y_start)], fill=self.text_color, width=1)
+        content_y_start += y_padding
+
+        self._render_file_content(draw, file_contents, x_padding, content_y_start, y_padding, line_spacing)
+
+        return img
+
+    def _render_commit_info(self, draw, commit_info, x_padding, y_padding, line_spacing):
+        """Renders the header part of the frame with commit information."""
         current_y = y_padding
 
-        # Author and Date
         author_text = f"Author: {commit_info['author_name']} <{commit_info['author_email']}>"
         date_text = f"Date: {commit_info['date'].strftime('%Y-%m-%d %H:%M:%S')}"
 
@@ -75,23 +86,44 @@ class FrameRenderer:
         text_height = self.font.getbbox(date_text)[3] - self.font.getbbox(date_text)[1]
         current_y += text_height + y_padding
 
-        # Commit Message
         commit_message = f"Commit: {commit_info['hash']} - {commit_info['message'].splitlines()[0]}"
         draw.text((x_padding, current_y), commit_message, font=self.font_header, fill=self.text_color)
         text_height = self.font_header.getbbox(commit_message)[3] - self.font_header.getbbox(commit_message)[1]
         current_y += text_height + y_padding
 
-        # --- Render File Tree ---
-        draw.line([(x_padding, current_y), (self.width - x_padding, current_y)], fill=self.text_color, width=1)
-        current_y += y_padding
+        return current_y
 
-        for file_path in file_tree:
-            draw.text((x_padding, current_y), file_path, font=self.font, fill=self.text_color)
-            text_height = self.font.getbbox(file_path)[3] - self.font.getbbox(file_path)[1]
+    def _render_file_content(self, draw, file_contents, x_padding, y_start, y_padding, line_spacing):
+        """
+        Renders the file content in a single column.
+        A more sophisticated version could use multiple columns.
+        """
+        current_y = y_start
+        file_header_font = self.font_header
+        code_font = self.font
+
+        # Sort files for consistent order
+        sorted_files = sorted(file_contents.keys())
+
+        for file_path in sorted_files:
+            content = file_contents[file_path]
+
+            # Draw file path header
+            file_header_text = f"--- {file_path} ---"
+            draw.text((x_padding, current_y), file_header_text, font=file_header_font, fill=self.text_color)
+            text_height = file_header_font.getbbox(file_header_text)[3] - file_header_font.getbbox(file_header_text)[1]
             current_y += text_height + line_spacing
-            if current_y > self.height - y_padding:
-                # Stop if we run out of space
-                draw.text((x_padding, current_y), "...", font=self.font, fill=self.text_color)
-                break
 
-        return img
+            # Draw file content
+            lines = content.splitlines()
+            for line in lines:
+                # Stop if we run out of vertical space
+                if current_y > self.height - y_padding - 15: # 15 is buffer for '...'
+                    draw.text((x_padding, current_y), "...", font=code_font, fill=self.text_color)
+                    return # Exit the function entirely
+
+                draw.text((x_padding + 10, current_y), line, font=code_font, fill=self.text_color)
+                text_height = code_font.getbbox(line)[3] - code_font.getbbox(line)[1]
+                current_y += text_height + (line_spacing // 2)
+
+            current_y += y_padding # Space between files

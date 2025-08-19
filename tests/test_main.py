@@ -19,7 +19,10 @@ class TestMainCli(unittest.TestCase):
         mock_commit2 = {'hash': 'abcdefg', 'commit_obj': MagicMock()}
         mock_repo_instance.get_commit_history.return_value = [mock_commit1, mock_commit2]
 
-        mock_repo_instance.get_file_tree_at_commit.side_effect = [['file1.txt'], ['file1.txt', 'file2.txt']]
+        mock_repo_instance.get_file_tree_at_commit.side_effect = [
+            {'file1.txt': 'content1'},
+            {'file1.txt': 'content1', 'file2.txt': 'content2'}
+        ]
 
         mock_renderer_instance = MagicMock()
         mock_frame_renderer.return_value = mock_renderer_instance
@@ -35,7 +38,14 @@ class TestMainCli(unittest.TestCase):
 
         # --- Assertions ---
         mock_git_repo.assert_called_once_with('fake_repo')
-        mock_frame_renderer.assert_called_once_with(width=1920, height=1080)
+        mock_frame_renderer.assert_called_once_with(
+            width=1920,
+            height=1080,
+            bg_color='#141618',
+            text_color='#FFFFFF',
+            font_path=None,
+            font_size=15
+        )
         mock_repo_instance.get_commit_history.assert_called_once_with(branch=None)
 
         # Check calls to render_frame using a direct comparison of call_args_list
@@ -43,8 +53,8 @@ class TestMainCli(unittest.TestCase):
         self.assertEqual(
             mock_renderer_instance.render_frame.call_args_list,
             [
-                call(mock_commit1, ['file1.txt']),
-                call(mock_commit2, ['file1.txt', 'file2.txt'])
+                call(mock_commit1, {'file1.txt': 'content1'}),
+                call(mock_commit2, {'file1.txt': 'content1', 'file2.txt': 'content2'})
             ]
         )
 
