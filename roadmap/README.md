@@ -7,6 +7,7 @@ This roadmap is organized into the following sections:
 - **Core Functionality:** The essential features required for the initial version of the tool.
 - **Advanced Features:** Enhancements and new capabilities to be added in future releases.
 - **Integrations:** Integrating the tool with other platforms and services.
+- **Security:** Measures to ensure the agent operates safely and does not expose sensitive information.
 - **Performance and Scalability:** Improvements to ensure the tool is fast and can handle large repositories.
 - **Non-Functional Requirements:** System requirements, dependencies, limitations, and documentation.
 
