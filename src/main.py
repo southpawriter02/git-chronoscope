@@ -33,6 +33,33 @@ def main():
         default=2,
         help="Frames per second for the output video. Default: 2"
     )
+    parser.add_argument(
+        "--resolution",
+        default="1080p",
+        choices=["720p", "1080p", "4k"],
+        help="Resolution of the output video. Default: 1080p"
+    )
+    parser.add_argument(
+        "--bg-color",
+        default="#141618",
+        help="Background color in hex format (e.g., '#RRGGBB'). Default: #141618"
+    )
+    parser.add_argument(
+        "--text-color",
+        default="#FFFFFF",
+        help="Text color in hex format (e.g., '#RRGGBB'). Default: #FFFFFF"
+    )
+    parser.add_argument(
+        "--font-path",
+        default=None,
+        help="Path to a .ttf font file. Default: Pillow's default font"
+    )
+    parser.add_argument(
+        "--font-size",
+        type=int,
+        default=15,
+        help="Font size for the text. Default: 15"
+    )
 
     args = parser.parse_args()
 
@@ -42,7 +69,21 @@ def main():
 
     try:
         # --- 1. Initialize modules ---
-        frame_renderer = FrameRenderer(width=1920, height=1080)
+        resolutions = {
+            "720p": (1280, 720),
+            "1080p": (1920, 1080),
+            "4k": (3840, 2160)
+        }
+        width, height = resolutions[args.resolution]
+
+        frame_renderer = FrameRenderer(
+            width=width,
+            height=height,
+            bg_color=args.bg_color,
+            text_color=args.text_color,
+            font_path=args.font_path,
+            font_size=args.font_size
+        )
         git_repo = GitRepo(args.repo_path)
 
         # --- 2. Get Git history ---
