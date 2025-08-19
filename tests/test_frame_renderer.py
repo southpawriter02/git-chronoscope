@@ -17,17 +17,17 @@ class TestFrameRenderer(unittest.TestCase):
             'date': datetime.now(),
             'message': 'Test commit message'
         }
-        self.file_tree = [
-            'src/main.py',
-            'src/git_utils.py',
-            'src/frame_renderer.py',
-            'tests/test_main.py',
-            'tests/test_git_utils.py',
-            'tests/test_frame_renderer.py'
-        ]
+        self.file_contents = {
+            'src/main.py': 'import antigravity',
+            'src/git_utils.py': '# This is a git util',
+            'src/frame_renderer.py': '# Renders frames',
+            'tests/test_main.py': 'import unittest',
+            'tests/test_git_utils.py': 'from git import Repo',
+            'tests/test_frame_renderer.py': 'from PIL import Image'
+        }
 
     def test_render_frame(self):
-        img = self.renderer.render_frame(self.commit_info, self.file_tree)
+        img = self.renderer.render_frame(self.commit_info, self.file_contents)
 
         self.assertIsInstance(img, Image.Image)
         self.assertEqual(img.size, (self.width, self.height))

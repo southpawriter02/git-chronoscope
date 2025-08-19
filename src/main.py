@@ -102,8 +102,8 @@ def main():
             progress = f"[{i+1}/{len(history)}]"
             print(f"{progress} Rendering frame for commit {commit['hash']}...")
 
-            file_tree = git_repo.get_file_tree_at_commit(commit['commit_obj'])
-            frame = frame_renderer.render_frame(commit, file_tree)
+            file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+            frame = frame_renderer.render_frame(commit, file_contents)
 
             frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
             frame.save(frame_path)

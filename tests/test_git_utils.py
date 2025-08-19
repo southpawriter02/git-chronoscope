@@ -63,17 +63,17 @@ class TestGitRepo(unittest.TestCase):
         # Test tree at the first commit
         commit0 = history[0]['commit_obj']
         file_tree0 = git_repo.get_file_tree_at_commit(commit0)
-        self.assertEqual(file_tree0, ['file_0.txt'])
+        self.assertEqual(file_tree0, {'file_0.txt': 'This is file 0'})
 
         # Test tree at the second commit
         commit1 = history[1]['commit_obj']
         file_tree1 = git_repo.get_file_tree_at_commit(commit1)
-        self.assertEqual(file_tree1, ['file_0.txt', 'file_1.txt'])
+        self.assertEqual(file_tree1, {'file_0.txt': 'This is file 0', 'file_1.txt': 'This is file 1'})
 
         # Test tree at the last commit
         commit2 = history[2]['commit_obj']
         file_tree2 = git_repo.get_file_tree_at_commit(commit2)
-        self.assertEqual(file_tree2, ['file_0.txt', 'file_1.txt', 'file_2.txt'])
+        self.assertEqual(file_tree2, {'file_0.txt': 'This is file 0', 'file_1.txt': 'This is file 1', 'file_2.txt': 'This is file 2'})
 
 if __name__ == '__main__':
     unittest.main()

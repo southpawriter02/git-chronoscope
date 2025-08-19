@@ -53,15 +53,20 @@ class GitRepo:
 
     def get_file_tree_at_commit(self, commit_obj):
         """
-        Gets the file tree of the repository at a specific commit.
+        Gets the file tree of the repository at a specific commit, including file content.
 
         :param commit_obj: The commit object from GitPython.
-        :return: A list of file paths in the repository at that commit.
+        :return: A dictionary mapping file paths to their content.
         """
         tree = commit_obj.tree
-        file_paths = []
+        file_contents = {}
         # Recursively traverse the tree
         for item in tree.traverse():
             if item.type == 'blob':  # 'blob' represents a file
-                file_paths.append(item.path)
-        return sorted(file_paths)
+                # Decode the file content to a string, handling potential binary files
+                try:
+                    file_contents[item.path] = item.data_stream.read().decode('utf-8')
+                except UnicodeDecodeError:
+                    # If it's not a UTF-8 text file, we can either skip it or mark it as binary.
+                    file_contents[item.path] = "[Binary File]"
+        return file_contents
