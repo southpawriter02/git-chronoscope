@@ -4,7 +4,7 @@ class FrameRenderer:
     """
     A class to render a single frame of the time-lapse video.
     """
-    def __init__(self, width, height, bg_color="#141618", text_color="#FFFFFF", font_path=None, font_size=15):
+    def __init__(self, width, height, bg_color="#141618", text_color="#FFFFFF", font_path=None, font_size=15, no_email=False):
         """
         Initializes the FrameRenderer object.
 
@@ -14,11 +14,13 @@ class FrameRenderer:
         :param text_color: The color of the text in hex format.
         :param font_path: Path to a .ttf font file. If None, a default font will be used.
         :param font_size: The size of the font.
+        :param no_email: If True, do not display author emails.
         """
         self.width = width
         self.height = height
         self.bg_color = self._hex_to_rgb(bg_color)
         self.text_color = self._hex_to_rgb(text_color)
+        self.no_email = no_email
 
         try:
             # This will raise an AttributeError if font_path is None
@@ -75,7 +77,8 @@ class FrameRenderer:
         """Renders the header part of the frame with commit information."""
         current_y = y_padding
 
-        author_text = f"Author: {commit_info['author_name']} <{commit_info['author_email']}>"
+        author_email = "[email protected]" if self.no_email else commit_info['author_email']
+        author_text = f"Author: {commit_info['author_name']} <{author_email}>"
         date_text = f"Date: {commit_info['date'].strftime('%Y-%m-%d %H:%M:%S')}"
 
         draw.text((x_padding, current_y), author_text, font=self.font, fill=self.text_color)

@@ -60,6 +60,11 @@ def main():
         default=15,
         help="Font size for the text. Default: 15"
     )
+    parser.add_argument(
+        "--no-email",
+        action="store_true",
+        help="Do not display author emails in the video."
+    )
 
     args = parser.parse_args()
 
@@ -82,7 +87,8 @@ def main():
             bg_color=args.bg_color,
             text_color=args.text_color,
             font_path=args.font_path,
-            font_size=args.font_size
+            font_size=args.font_size,
+            no_email=args.no_email
         )
         git_repo = GitRepo(args.repo_path)
 
