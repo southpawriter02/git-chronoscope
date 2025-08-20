@@ -5,6 +5,7 @@ import shutil
 from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
+from src.security import DataRedactor
 
 def main():
     """
@@ -81,6 +82,9 @@ def main():
         }
         width, height = resolutions[args.resolution]
 
+        # Initialize the data redactor for sanitizing content.
+        data_redactor = DataRedactor()
+
         frame_renderer = FrameRenderer(
             width=width,
             height=height,
@@ -108,8 +112,27 @@ def main():
             progress = f"[{i+1}/{len(history)}]"
             print(f"{progress} Rendering frame for commit {commit['hash']}...")
 
+            # Sanitize commit metadata before rendering.
+            # This includes the commit message and author details.
+            sanitized_commit = {
+                'hash': commit['hash'],
+                'author_name': data_redactor.redact(commit['author_name']),
+                'author_email': data_redactor.redact(commit['author_email']),
+                'date': commit['date'],
+                'message': data_redactor.redact(commit['message']),
+            }
+
+            # Get the file tree at the current commit.
             file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
-            frame = frame_renderer.render_frame(commit, file_contents)
+
+            # Sanitize the content of each file.
+            sanitized_contents = {
+                path: data_redactor.redact(content)
+                for path, content in file_contents.items()
+            }
+
+            # Render the frame using the sanitized data.
+            frame = frame_renderer.render_frame(sanitized_commit, sanitized_contents)
 
             frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
             frame.save(frame_path)

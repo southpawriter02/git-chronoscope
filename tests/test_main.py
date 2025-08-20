@@ -15,8 +15,22 @@ class TestMainCli(unittest.TestCase):
         mock_repo_instance = MagicMock()
         mock_git_repo.return_value = mock_repo_instance
 
-        mock_commit1 = {'hash': '1234567', 'commit_obj': MagicMock()}
-        mock_commit2 = {'hash': 'abcdefg', 'commit_obj': MagicMock()}
+        mock_commit1 = {
+            'hash': '1234567',
+            'author_name': 'Test Author',
+            'author_email': 'test@example.com',
+            'date': 'some_date',
+            'message': 'Initial commit',
+            'commit_obj': MagicMock()
+        }
+        mock_commit2 = {
+            'hash': 'abcdefg',
+            'author_name': 'Test Author',
+            'author_email': 'test@example.com',
+            'date': 'some_other_date',
+            'message': 'Second commit',
+            'commit_obj': MagicMock()
+        }
         mock_repo_instance.get_commit_history.return_value = [mock_commit1, mock_commit2]
 
         mock_repo_instance.get_file_tree_at_commit.side_effect = [
@@ -51,11 +65,23 @@ class TestMainCli(unittest.TestCase):
 
         # Check calls to render_frame using a direct comparison of call_args_list
         self.assertEqual(mock_renderer_instance.render_frame.call_count, 2)
+
+        # The DataRedactor will be called, but since there are no secrets, the data is unchanged.
+        # The `commit_obj` is not passed to render_frame.
+        sanitized_commit1 = mock_commit1.copy()
+        del sanitized_commit1['commit_obj']
+        sanitized_commit2 = mock_commit2.copy()
+        del sanitized_commit2['commit_obj']
+
+        # The content of the files should also be sanitized
+        sanitized_contents1 = {'file1.txt': 'content1'}
+        sanitized_contents2 = {'file1.txt': 'content1', 'file2.txt': 'content2'}
+
         self.assertEqual(
             mock_renderer_instance.render_frame.call_args_list,
             [
-                call(mock_commit1, {'file1.txt': 'content1'}),
-                call(mock_commit2, {'file1.txt': 'content1', 'file2.txt': 'content2'})
+                call(sanitized_commit1, sanitized_contents1),
+                call(sanitized_commit2, sanitized_contents2)
             ]
         )
 
@@ -83,7 +109,15 @@ class TestMainCli(unittest.TestCase):
         # We only need to test that the `no_email` flag is passed correctly
         mock_repo_instance = MagicMock()
         mock_git_repo.return_value = mock_repo_instance
-        mock_repo_instance.get_commit_history.return_value = [{'hash': '123', 'commit_obj': MagicMock()}]
+        mock_commit = {
+            'hash': '123',
+            'author_name': 'Test Author',
+            'author_email': 'test@example.com',
+            'date': 'some_date',
+            'message': 'Test commit',
+            'commit_obj': MagicMock()
+        }
+        mock_repo_instance.get_commit_history.return_value = [mock_commit]
         mock_repo_instance.get_file_tree_at_commit.return_value = {}
 
         main.main()
