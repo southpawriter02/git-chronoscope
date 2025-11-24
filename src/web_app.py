@@ -3,10 +3,15 @@ Web-based GUI for git-chronoscope using Flask.
 Provides an easy-to-use interface for generating Git repository time-lapses.
 """
 import os
+import sys
 import tempfile
 import shutil
 import threading
 import time
+
+# Add parent directory to path for imports
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+
 from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
 from werkzeug.utils import secure_filename
 from src.git_utils import GitRepo
