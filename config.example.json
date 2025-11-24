@@ -1,0 +1,15 @@
+# Git Chronoscope Configuration Example
+# Copy this file to 'chronoscope.json' and customize it
+#
+# Usage: python -m src.main --config chronoscope.json /path/to/repo output.mp4
+
+{
+  "format": "mp4",
+  "resolution": "1080p",
+  "fps": 2,
+  "bg_color": "#141618",
+  "text_color": "#FFFFFF",
+  "font_size": 15,
+  "no_email": false,
+  "branch": null
+}

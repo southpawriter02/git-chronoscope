@@ -93,3 +93,35 @@ You can customize the output by using the following command-line options:
 | `--font-path` | Path to a `.ttf` font file. | Pillow's default font |
 | `--font-size` | Font size for the text. | `15` |
 | `--no-email` | Do not display author emails in the video. | `False` |
+
+## What's New in This Version 🎉
+
+- **Web-based GUI**: User-friendly interface for generating time-lapses without command-line knowledge
+- **Progress Bars**: Visual feedback during CLI generation with tqdm
+- **Better Documentation**: Comprehensive guides for both beginners and power users
+- **Easy Launcher**: One-command start with `launch_gui.py`
+
+## Future Enhancements
+
+The project roadmap includes exciting features like:
+- Interactive timeline viewer (HTML/JavaScript based)
+- VS Code extension
+- GitHub Actions integration
+- Path filtering and branch comparison
+- More export formats
+
+See the [roadmap](roadmap/README.md) for detailed plans.
+
+## Contributing
+
+We welcome contributions! Whether it's:
+- 🐛 Bug reports and fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🎨 UI/UX enhancements
+
+Please feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.

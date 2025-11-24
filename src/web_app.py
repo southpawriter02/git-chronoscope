@@ -12,8 +12,7 @@ import time
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from flask import Flask, render_template, request, jsonify, send_file, redirect, url_for
-from werkzeug.utils import secure_filename
+from flask import Flask, render_template, request, jsonify, send_file
 from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
@@ -25,6 +24,7 @@ app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max upload
 app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
 
 # Store job status in memory (in production, use Redis or database)
+# Note: Jobs are lost on server restart in development mode
 jobs = {}
 
 
@@ -225,9 +225,19 @@ def download(job_id):
 
 
 def run_server(host='127.0.0.1', port=5000, debug=False):
-    """Run the Flask development server."""
+    """
+    Run the Flask development server.
+    
+    WARNING: Debug mode should NEVER be enabled in production as it can
+    allow arbitrary code execution. Only use debug=True during development.
+    """
+    if debug:
+        print("WARNING: Debug mode is enabled. Do not use in production!")
     app.run(host=host, port=port, debug=debug)
 
 
 if __name__ == '__main__':
-    run_server(debug=True)
+    # Only enable debug mode if explicitly requested via environment variable
+    import os
+    debug_mode = os.environ.get('FLASK_DEBUG', '0') == '1'
+    run_server(debug=debug_mode)

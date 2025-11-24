@@ -31,7 +31,7 @@ def main():
     browser_thread.start()
     
     try:
-        # Run the Flask server
+        # Run the Flask server in production mode (debug=False) for security
         run_server(host='127.0.0.1', port=port, debug=False)
     except KeyboardInterrupt:
         print("\n\nShutting down server... Goodbye!")
