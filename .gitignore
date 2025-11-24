@@ -83,3 +83,12 @@ dmypy.json
 
 # Cython debug symbols
 cython_debug/
+
+# Output files
+*.mp4
+*.gif
+*.avi
+*.mov
+
+# Temporary files
+temp_frames/

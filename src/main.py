@@ -6,6 +6,12 @@ from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
 
+try:
+    from tqdm import tqdm
+    HAS_TQDM = True
+except ImportError:
+    HAS_TQDM = False
+
 def main():
     """
     Main function for the git-chronoscope tool.
@@ -104,9 +110,17 @@ def main():
 
         # --- 3. Render frames for each commit ---
         frame_paths = []
-        for i, commit in enumerate(history):
-            progress = f"[{i+1}/{len(history)}]"
-            print(f"{progress} Rendering frame for commit {commit['hash']}...")
+        
+        # Use tqdm if available, otherwise simple progress
+        if HAS_TQDM:
+            commit_iterator = tqdm(enumerate(history), total=len(history), desc="Rendering frames", unit="frame")
+        else:
+            commit_iterator = enumerate(history)
+        
+        for i, commit in commit_iterator:
+            if not HAS_TQDM:
+                progress = f"[{i+1}/{len(history)}]"
+                print(f"{progress} Rendering frame for commit {commit['hash']}...")
 
             file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
             frame = frame_renderer.render_frame(commit, file_contents)
