@@ -25,7 +25,11 @@ class GitRepo:
         :return: A list of dictionaries, where each dictionary represents a commit.
         """
         if branch is None:
-            branch = self.repo.active_branch.name
+            try:
+                branch = self.repo.active_branch.name
+            except TypeError:
+                # Detached HEAD state
+                branch = self.repo.head.commit.hexsha
 
         try:
             commits = list(self.repo.iter_commits(branch, reverse=True))
