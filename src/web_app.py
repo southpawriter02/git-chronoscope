@@ -8,6 +8,8 @@ import tempfile
 import shutil
 import threading
 import time
+import io
+import base64
 
 # Add parent directory to path for imports
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
@@ -39,6 +41,7 @@ class TimelapseJob:
         self.message = ''
         self.output_path = None
         self.error = None
+        self.created_at = time.time()
 
 
 def generate_timelapse_worker(job):
@@ -52,12 +55,16 @@ def generate_timelapse_worker(job):
         
         try:
             # Initialize modules
-            resolutions = {
-                "720p": (1280, 720),
-                "1080p": (1920, 1080),
-                "4k": (3840, 2160)
-            }
-            width, height = resolutions[job.options.get('resolution', '1080p')]
+            width = job.options.get('width')
+            height = job.options.get('height')
+
+            if not width or not height:
+                resolutions = {
+                    "720p": (1280, 720),
+                    "1080p": (1920, 1080),
+                    "4k": (3840, 2160)
+                }
+                width, height = resolutions.get(job.options.get('resolution', '1080p'), (1920, 1080))
             
             frame_renderer = FrameRenderer(
                 width=width,
@@ -164,12 +171,24 @@ def generate():
         # Generate job ID
         job_id = f"{int(time.time())}_{len(jobs)}"
         
+        # Handle custom resolution
+        width = None
+        height = None
+        if data.get('resolution') == 'custom':
+            try:
+                width = int(data.get('width'))
+                height = int(data.get('height'))
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Invalid custom resolution dimensions'}), 400
+
         # Create job
         options = {
             'format': data.get('format', 'mp4'),
             'branch': data.get('branch'),
             'fps': int(data.get('fps', 2)),
             'resolution': data.get('resolution', '1080p'),
+            'width': width,
+            'height': height,
             'bg_color': data.get('bg_color', '#141618'),
             'text_color': data.get('text_color', '#FFFFFF'),
             'font_size': int(data.get('font_size', 15)),
@@ -187,6 +206,87 @@ def generate():
         return jsonify({'job_id': job_id})
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/preview', methods=['POST'])
+def preview():
+    """Generate a preview frame."""
+    try:
+        data = request.get_json()
+        repo_path = data.get('repo_path')
+
+        if not repo_path or not os.path.exists(repo_path):
+            return jsonify({'error': 'Invalid repository path'}), 400
+
+        # Determine resolution
+        width = None
+        height = None
+        if data.get('resolution') == 'custom':
+            try:
+                width = int(data.get('width'))
+                height = int(data.get('height'))
+            except (ValueError, TypeError):
+                return jsonify({'error': 'Invalid custom resolution dimensions'}), 400
+        else:
+            resolutions = {
+                "720p": (1280, 720),
+                "1080p": (1920, 1080),
+                "4k": (3840, 2160)
+            }
+            width, height = resolutions.get(data.get('resolution', '1080p'), (1920, 1080))
+
+        # Initialize renderer
+        frame_renderer = FrameRenderer(
+            width=width,
+            height=height,
+            bg_color=data.get('bg_color', '#141618'),
+            text_color=data.get('text_color', '#FFFFFF'),
+            font_size=int(data.get('font_size', 15)),
+            no_email=data.get('no_email', False)
+        )
+
+        git_repo = GitRepo(repo_path)
+
+        # Get latest commit from the specified branch (or current)
+        history = git_repo.get_commit_history(branch=data.get('branch'))
+        if not history:
+             return jsonify({'error': 'No commits found'}), 400
+
+        # Use the latest commit for preview
+        latest_commit = history[-1]
+
+        file_contents = git_repo.get_file_tree_at_commit(latest_commit['commit_obj'])
+        frame = frame_renderer.render_frame(latest_commit, file_contents)
+
+        # Convert to base64
+        buffered = io.BytesIO()
+        frame.save(buffered, format="PNG")
+        img_str = base64.b64encode(buffered.getvalue()).decode()
+
+        return jsonify({'image': img_str})
+
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
+@app.route('/api/jobs', methods=['GET'])
+def get_jobs():
+    """Get list of recent jobs."""
+    job_list = []
+    for job_id, job in jobs.items():
+        job_list.append({
+            'id': job.job_id,
+            'repo_path': job.repo_path,
+            'status': job.status,
+            'created_at': job.created_at,
+            'format': job.options.get('format'),
+            'has_output': job.output_path is not None
+        })
+
+    # Sort by creation time (newest first)
+    job_list.sort(key=lambda x: x['created_at'], reverse=True)
+
+    return jsonify({'jobs': job_list})
 
 
 @app.route('/api/status/<job_id>')
