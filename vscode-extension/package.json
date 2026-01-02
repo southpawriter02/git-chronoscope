@@ -1,0 +1,96 @@
+{
+    "name": "git-chronoscope",
+    "displayName": "Git Chronoscope",
+    "description": "Generate time-lapse visualizations of your Git repository's evolution",
+    "version": "0.1.0",
+    "publisher": "git-chronoscope",
+    "engines": {
+        "vscode": "^1.74.0"
+    },
+    "categories": [
+        "Visualization",
+        "SCM Providers"
+    ],
+    "activationEvents": [
+        "onCommand:chronoscope.generate",
+        "onCommand:chronoscope.generateFile",
+        "onCommand:chronoscope.showOutput"
+    ],
+    "main": "./out/extension.js",
+    "contributes": {
+        "commands": [
+            {
+                "command": "chronoscope.generate",
+                "title": "Chronoscope: Generate Time-Lapse"
+            },
+            {
+                "command": "chronoscope.generateFile",
+                "title": "Chronoscope: Generate Time-Lapse for Current File"
+            },
+            {
+                "command": "chronoscope.showOutput",
+                "title": "Chronoscope: Show Output"
+            }
+        ],
+        "viewsContainers": {
+            "activitybar": [
+                {
+                    "id": "chronoscope",
+                    "title": "Git Chronoscope",
+                    "icon": "media/icon.svg"
+                }
+            ]
+        },
+        "views": {
+            "chronoscope": [
+                {
+                    "type": "webview",
+                    "id": "chronoscope.sidebar",
+                    "name": "Configuration"
+                }
+            ]
+        },
+        "configuration": {
+            "title": "Git Chronoscope",
+            "properties": {
+                "chronoscope.pythonPath": {
+                    "type": "string",
+                    "default": "python3",
+                    "description": "Path to Python executable"
+                },
+                "chronoscope.outputFormat": {
+                    "type": "string",
+                    "enum": [
+                        "mp4",
+                        "gif",
+                        "html"
+                    ],
+                    "default": "mp4",
+                    "description": "Default output format"
+                },
+                "chronoscope.fps": {
+                    "type": "number",
+                    "default": 5,
+                    "description": "Frames per second"
+                }
+            }
+        }
+    },
+    "scripts": {
+        "vscode:prepublish": "npm run compile",
+        "compile": "tsc -p ./",
+        "watch": "tsc -watch -p ./",
+        "pretest": "npm run compile",
+        "test": "node ./out/test/runTest.js",
+        "lint": "eslint src --ext ts"
+    },
+    "devDependencies": {
+        "@types/vscode": "^1.74.0",
+        "@types/mocha": "^10.0.1",
+        "@types/node": "^18.0.0",
+        "@vscode/test-electron": "^2.3.0",
+        "typescript": "^5.0.0",
+        "mocha": "^10.2.0",
+        "eslint": "^8.0.0"
+    }
+}
