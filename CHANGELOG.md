@@ -7,16 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.1] - 2026-01-02
+
+First public beta release establishing distribution foundation.
+
 ### Added
+- Comprehensive INSTALL.md with instructions for all installation methods
 - Docker Hub publishing workflow for multi-architecture images (amd64, arm64)
 - Version roadmap documentation for path to v1.0
+- README badges for PyPI, Docker Hub, and license
+- Docker HEALTHCHECK for container health monitoring
 
 ### Changed
 - Version scheme updated to 0.9.x beta series before v1.0 release
-
-## [0.9.0] - TBD
-
-First public beta release.
+- Updated all placeholder URLs to southpawriter02/git-chronoscope
+- Synchronized dependencies across pyproject.toml, setup.py, and requirements.txt
+- Homebrew formulas updated for v0.9.0-beta.1
+- Improved README installation section with quick install options
 
 ### Features
 - **Core Functionality**

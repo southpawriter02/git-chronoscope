@@ -1,5 +1,9 @@
 # git-chronoscope
 
+[![PyPI version](https://badge.fury.io/py/git-chronoscope.svg)](https://badge.fury.io/py/git-chronoscope)
+[![Docker Pulls](https://img.shields.io/docker/pulls/southpawriter02/git-chronoscope)](https://hub.docker.com/r/southpawriter02/git-chronoscope)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 A command-line tool and web-based GUI that generates a video or animated GIF showing the evolution of a Git repository's codebase. It visualizes file creation, deletion, and code changes, creating a compelling, shareable artifact that tells the story of a project.
 
 ## Features
@@ -13,26 +17,33 @@ A command-line tool and web-based GUI that generates a video or animated GIF sho
 
 ## Installation
 
+### Quick Install
+
+```bash
+# PyPI (recommended)
+pip install git-chronoscope
+
+# Homebrew (macOS/Linux)
+brew tap southpawriter02/git-chronoscope && brew install git-chronoscope
+
+# Docker
+docker pull southpawriter02/git-chronoscope
+```
+
 ### Prerequisites
 
-- Python 3.7+
-- Git
-- FFmpeg
+- **FFmpeg** - Required for video encoding ([download](https://ffmpeg.org/download.html))
+- **Git** - Required for repository access
 
-Before you begin, ensure you have [FFmpeg](https://ffmpeg.org/download.html) installed and accessible in your system's PATH. FFmpeg is required for video encoding. See [DEPENDENCIES.md](DEPENDENCIES.md) for detailed installation guides.
+See [INSTALL.md](INSTALL.md) for detailed installation instructions including standalone executables and installation from source.
 
-### Steps
+### From Source
 
-1.  **Clone the repository:**
-    ```bash
-    git clone https://github.com/your-username/git-chronoscope.git
-    cd git-chronoscope
-    ```
-
-2.  **Install Python dependencies:**
-    ```bash
-    pip install -r requirements.txt
-    ```
+```bash
+git clone https://github.com/southpawriter02/git-chronoscope.git
+cd git-chronoscope
+pip install -r requirements.txt
+```
 
 ## Usage
 
@@ -185,7 +196,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 Add to your workflow:
 
 ```yaml
-- uses: your-username/git-chronoscope@v1
+- uses: southpawriter02/git-chronoscope@v1
   with:
     format: html
     output-path: timelapse.html

@@ -6,7 +6,7 @@ This repository contains the Homebrew formula for git-chronoscope.
 
 ```bash
 # Add the tap
-brew tap user/git-chronoscope
+brew tap southpawriter02/git-chronoscope
 
 # Install
 brew install git-chronoscope
@@ -31,7 +31,7 @@ brew upgrade git-chronoscope
 
 ```bash
 brew uninstall git-chronoscope
-brew untap user/git-chronoscope
+brew untap southpawriter02/git-chronoscope
 ```
 
 ## From Source

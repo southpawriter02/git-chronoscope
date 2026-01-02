@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "git-chronoscope"
-version = "0.9.0"
+version = "0.9.0-beta.1"
 description = "Generate time-lapse visualizations of Git repository evolution"
 readme = "README.md"
 license = {text = "MIT"}
@@ -32,6 +32,7 @@ dependencies = [
     "Pillow>=9.0.0",
     "Pygments>=2.10.0",
     "tqdm>=4.60.0",
+    "Flask>=2.3.0",
 ]
 
 [project.optional-dependencies]
@@ -46,10 +47,10 @@ dev = [
 git-chronoscope = "src.main:main"
 
 [project.urls]
-Homepage = "https://github.com/user/git-chronoscope"
-Documentation = "https://github.com/user/git-chronoscope#readme"
-Repository = "https://github.com/user/git-chronoscope"
-Issues = "https://github.com/user/git-chronoscope/issues"
+Homepage = "https://github.com/southpawriter02/git-chronoscope"
+Documentation = "https://github.com/southpawriter02/git-chronoscope#readme"
+Repository = "https://github.com/southpawriter02/git-chronoscope"
+Issues = "https://github.com/southpawriter02/git-chronoscope/issues"
 
 [tool.setuptools.packages.find]
 where = ["."]

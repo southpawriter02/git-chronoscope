@@ -1,16 +1,16 @@
 # git-chronoscope Homebrew Formula
 # Install: brew install --build-from-source ./Formula/git-chronoscope.rb
-# Or via tap: brew tap user/git-chronoscope && brew install git-chronoscope
+# Or via tap: brew tap southpawriter02/git-chronoscope && brew install git-chronoscope
 
 class GitChronoscope < Formula
   include Language::Python::Virtualenv
 
   desc "Generate time-lapse visualizations of Git repository evolution"
-  homepage "https://github.com/user/git-chronoscope"
-  url "https://github.com/user/git-chronoscope/archive/refs/tags/v1.0.0.tar.gz"
+  homepage "https://github.com/southpawriter02/git-chronoscope"
+  url "https://github.com/southpawriter02/git-chronoscope/archive/refs/tags/v0.9.0-beta.1.tar.gz"
   sha256 "PLACEHOLDER_SHA256_WILL_BE_UPDATED_ON_RELEASE"
   license "MIT"
-  head "https://github.com/user/git-chronoscope.git", branch: "main"
+  head "https://github.com/southpawriter02/git-chronoscope.git", branch: "main"
 
   depends_on "python@3.11"
   depends_on "ffmpeg"

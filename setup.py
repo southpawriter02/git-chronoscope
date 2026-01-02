@@ -8,13 +8,13 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="git-chronoscope",
-    version="1.0.0",
+    version="0.9.0-beta.1",
     author="Git Chronoscope Team",
     author_email="chronoscope@example.com",
     description="Generate time-lapse visualizations of Git repository evolution",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/user/git-chronoscope",
+    url="https://github.com/southpawriter02/git-chronoscope",
     packages=find_packages(),
     classifiers=[
         "Development Status :: 4 - Beta",
@@ -35,6 +35,7 @@ setup(
         "Pillow>=9.0.0",
         "Pygments>=2.10.0",
         "tqdm>=4.60.0",
+        "Flask>=2.3.0",
     ],
     extras_require={
         "dev": [
