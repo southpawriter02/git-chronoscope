@@ -12,6 +12,7 @@ from src.timeline_generator import TimelineGenerator
 from src.redactor import SecretRedactor
 from src.diff_utils import DiffCalculator
 from src.access_control import AccessControl
+from src.input_sanitizer import InputSanitizer
 
 try:
     from tqdm import tqdm
@@ -238,6 +239,11 @@ def main():
         action="store_true",
         help="Enable .agentignore file access control restrictions."
     )
+    parser.add_argument(
+        "--strict-input",
+        action="store_true",
+        help="Enable strict input validation (blocks suspicious patterns)."
+    )
 
     args = parser.parse_args()
 
@@ -253,6 +259,51 @@ def main():
             "4k": (3840, 2160)
         }
         width, height = resolutions[args.resolution]
+
+        # --- Input Sanitization ---
+        sanitizer = InputSanitizer(strict_mode=args.strict_input)
+        
+        # Validate repo path
+        sanitized_path, path_valid = sanitizer.sanitize_path(args.repo_path)
+        if not path_valid:
+            print(f"Error: Invalid repository path: {args.repo_path}")
+            for warning in sanitizer.get_warnings():
+                print(f"  ⚠️  {warning}")
+            return
+        
+        # Validate branch name if provided
+        if args.branch:
+            sanitized_branch, branch_valid = sanitizer.sanitize_branch_name(args.branch)
+            if not branch_valid and args.strict_input:
+                print(f"Error: Invalid branch name: {args.branch}")
+                for warning in sanitizer.get_warnings():
+                    print(f"  ⚠️  {warning}")
+                return
+            args.branch = sanitized_branch if branch_valid else args.branch
+        
+        # Validate patterns
+        if args.include:
+            for i, pattern in enumerate(args.include):
+                sanitized, valid = sanitizer.sanitize_pattern(pattern)
+                if not valid and args.strict_input:
+                    print(f"Error: Invalid include pattern: {pattern}")
+                    return
+        
+        if args.exclude:
+            for i, pattern in enumerate(args.exclude):
+                sanitized, valid = sanitizer.sanitize_pattern(pattern)
+                if not valid and args.strict_input:
+                    print(f"Error: Invalid exclude pattern: {pattern}")
+                    return
+        
+        # Show warnings if any
+        warnings = sanitizer.get_warnings()
+        if warnings:
+            print(f"⚠️  Input validation warnings ({len(warnings)}):")
+            for warning in warnings[:5]:  # Limit to first 5
+                print(f"   - {warning}")
+            if len(warnings) > 5:
+                print(f"   ... and {len(warnings) - 5} more")
 
         frame_renderer = FrameRenderer(
             width=width,

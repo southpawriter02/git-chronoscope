@@ -110,6 +110,7 @@ You can customize the output by using the following command-line options:
 | `--since` | Only include commits after date (YYYY-MM-DD). | None |
 | `--until` | Only include commits before date (YYYY-MM-DD). | None |
 | `--access-control` | Enable .agentignore file access restrictions. | `False` |
+| `--strict-input` | Enable strict input validation (blocks suspicious patterns). | `False` |
 
 ### Path Filtering Examples
 
@@ -149,6 +150,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Input Validation**: Prompt injection defense with `--strict-input`
 - **File Access Control**: Restrict file access with `.agentignore` using `--access-control`
 - **Large Repository Handling**: Commit sampling with `--sample-rate` and date filtering
 - **Semantic Diffing**: Highlight code changes with `--show-diff`
