@@ -4,7 +4,17 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 
 ## Implementation Status Overview
 
-**All roadmap items are now implemented! ✅**
+**Core features complete. Distribution and new integrations in progress.**
+
+- Core Functionality: 4/4 ✅
+- Advanced Features: 5/5 ✅
+- Security: 12/12 ✅
+- Performance & Scalability: 3/3 ✅
+- Integrations: 4/4 ✅
+- Non-Functional: 4/4 ✅
+- Distribution: 3/5 (in progress)
+- New Integrations: 0/4 (planned)
+- New Advanced Features: 0/5 (planned for post-1.0)
 
 ### Core Functionality (4/4 ✅)
 
@@ -70,17 +80,19 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 
 ---
 
+## Distribution (3/5 ✅)
+
+| Feature | Status | Description | Implementation |
+|---------|--------|-------------|----------------|
+| PyPI Package | ✅ | `pip install git-chronoscope` | `.github/workflows/publish.yml` |
+| Homebrew Formula | ✅ | `brew install git-chronoscope` | `Formula/git-chronoscope.rb` |
+| Standalone Executable | ✅ | No Python required | `packaging/`, `.github/workflows/build-executables.yml` |
+| Docker Hub Image | ⏳ | Official Docker image | `Dockerfile` (not yet published) |
+| npm Package | ⏳ | Node.js wrapper | Not started |
+
+---
+
 ## Future Features (Not Yet Implemented)
-
-### Distribution (0/5 ⏳)
-
-| Feature | Status | Description |
-|---------|--------|-------------|
-| PyPI Package | ⏳ | `pip install git-chronoscope` |
-| Homebrew Formula | ⏳ | `brew install git-chronoscope` |
-| Standalone Executable | ⏳ | No Python required |
-| Docker Hub Image | ⏳ | Official Docker image |
-| npm Package | ⏳ | Node.js wrapper |
 
 ### New Integrations (0/4 ⏳)
 

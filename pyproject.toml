@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "git-chronoscope"
-version = "1.0.0"
+version = "0.9.0"
 description = "Generate time-lapse visualizations of Git repository evolution"
 readme = "README.md"
 license = {text = "MIT"}
