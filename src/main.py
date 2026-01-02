@@ -11,6 +11,7 @@ from src.cache import FrameCache
 from src.timeline_generator import TimelineGenerator
 from src.redactor import SecretRedactor
 from src.diff_utils import DiffCalculator
+from src.access_control import AccessControl
 
 try:
     from tqdm import tqdm
@@ -232,6 +233,11 @@ def main():
         metavar="DATE",
         help="Only include commits before this date (YYYY-MM-DD)."
     )
+    parser.add_argument(
+        "--access-control",
+        action="store_true",
+        help="Enable .agentignore file access control restrictions."
+    )
 
     args = parser.parse_args()
 
@@ -331,6 +337,17 @@ def main():
                 redactor.add_pattern(f"custom_{len(redactor.patterns)}", pattern)
         if redactor.enabled:
             print(f"Secret redaction enabled with {len(redactor.patterns)} patterns.")
+
+        # --- Initialize access control ---
+        access_control = None
+        if args.access_control:
+            access_control = AccessControl()
+            agentignore_path = os.path.join(args.repo_path, '.agentignore')
+            if access_control.load_from_file(agentignore_path):
+                stats = access_control.get_stats()
+                print(f"Access control enabled: {stats['blocked_patterns']} blocked patterns from .agentignore")
+            else:
+                print("Access control enabled but no .agentignore file found.")
 
         if not history:
             print("No commits found matching the filter criteria. Exiting.")
@@ -668,6 +685,9 @@ def main():
                     
                     if redactor.enabled:
                         file_contents, _ = redactor.redact_file_tree(file_contents)
+                    
+                    if access_control:
+                        file_contents, _ = access_control.filter_file_tree(file_contents)
                     
                     if author_colors:
                         frame_renderer.set_author_color(author_colors.get(commit['author_name']))
