@@ -85,6 +85,16 @@ def main():
         metavar="PATTERN",
         help="Glob pattern for files to exclude (can be specified multiple times). Example: 'tests/*' or '*.log'"
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Preview what would be generated without creating the video. Shows commit count, file stats, and estimated duration."
+    )
+    parser.add_argument(
+        "--author-colors",
+        action="store_true",
+        help="Enable author highlighting - each author gets a unique color in the video."
+    )
 
     args = parser.parse_args()
 
@@ -144,7 +154,62 @@ def main():
             print("No commits found matching the filter criteria. Exiting.")
             return
 
+        # --- Dry Run Mode ---
+        if args.dry_run:
+            print("\n" + "="*60)
+            print("DRY RUN MODE - Preview of time-lapse generation")
+            print("="*60)
+            print(f"\n📁 Repository: {args.repo_path}")
+            print(f"🌿 Branch: {args.branch or git_repo.repo.active_branch.name}")
+            print(f"📊 Total commits to process: {len(history)}")
+            
+            # Calculate file statistics
+            first_commit = history[0]
+            last_commit = history[-1]
+            first_tree = git_repo.get_file_tree_at_commit(first_commit['commit_obj'])
+            last_tree = git_repo.get_file_tree_at_commit(last_commit['commit_obj'])
+            
+            if include_patterns or exclude_patterns:
+                first_tree = git_repo.filter_file_tree(first_tree, include_patterns, exclude_patterns)
+                last_tree = git_repo.filter_file_tree(last_tree, include_patterns, exclude_patterns)
+            
+            print(f"\n📈 File count progression:")
+            print(f"   First commit ({first_commit['hash']}): {len(first_tree)} files")
+            print(f"   Last commit ({last_commit['hash']}): {len(last_tree)} files")
+            
+            # Calculate estimated video duration
+            duration_seconds = len(history) / args.fps
+            minutes = int(duration_seconds // 60)
+            seconds = int(duration_seconds % 60)
+            print(f"\n⏱️  Estimated video duration: {minutes}m {seconds}s (at {args.fps} fps)")
+            print(f"🎬 Output format: {args.format.upper()}")
+            print(f"📐 Resolution: {args.resolution}")
+            
+            # Show date range
+            print(f"\n📅 Date range:")
+            print(f"   From: {first_commit['date'].strftime('%Y-%m-%d %H:%M')}")
+            print(f"   To:   {last_commit['date'].strftime('%Y-%m-%d %H:%M')}")
+            
+            # Show unique authors
+            authors = set(c['author_name'] for c in history)
+            print(f"\n👥 Authors: {len(authors)}")
+            for author in sorted(authors):
+                count = sum(1 for c in history if c['author_name'] == author)
+                print(f"   - {author} ({count} commits)")
+            
+            print("\n" + "="*60)
+            print("To generate the video, run without --dry-run")
+            print("="*60 + "\n")
+            return
+
         print(f"Processing {len(history)} commits. Starting frame rendering...")
+
+        # --- Generate author colors if enabled ---
+        author_colors = None
+        if args.author_colors:
+            authors = set(c['author_name'] for c in history)
+            author_colors = FrameRenderer.generate_author_colors(authors)
+            print(f"Author highlighting enabled for {len(authors)} authors.")
 
         # --- 4. Render frames for each commit ---
         frame_paths = []
@@ -170,6 +235,10 @@ def main():
                     include_patterns=include_patterns,
                     exclude_patterns=exclude_patterns
                 )
+            
+            # Set author color for this frame if enabled
+            if author_colors:
+                frame_renderer.set_author_color(author_colors.get(commit['author_name']))
             
             frame = frame_renderer.render_frame(commit, file_contents)
 

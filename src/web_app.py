@@ -107,6 +107,12 @@ def generate_timelapse_worker(job):
             job.message = f'Found {len(history)} commits. Rendering frames...'
             job.progress = 10
             
+            # Generate author colors if enabled
+            author_colors = None
+            if job.options.get('author_colors'):
+                authors = set(c['author_name'] for c in history)
+                author_colors = FrameRenderer.generate_author_colors(authors)
+            
             # Render frames
             frame_paths = []
             for i, commit in enumerate(history):
@@ -119,6 +125,10 @@ def generate_timelapse_worker(job):
                         include_patterns=include_patterns,
                         exclude_patterns=exclude_patterns
                     )
+                
+                # Set author color for this frame if enabled
+                if author_colors:
+                    frame_renderer.set_author_color(author_colors.get(commit['author_name']))
                 
                 frame = frame_renderer.render_frame(commit, file_contents)
                 
@@ -221,7 +231,8 @@ def generate():
             'font_size': int(data.get('font_size', 15)),
             'no_email': data.get('no_email', False),
             'include_patterns': data.get('include_patterns'),
-            'exclude_patterns': data.get('exclude_patterns')
+            'exclude_patterns': data.get('exclude_patterns'),
+            'author_colors': data.get('author_colors', False)
         }
         
         job = TimelapseJob(job_id, repo_path, options)

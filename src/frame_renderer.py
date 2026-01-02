@@ -1,4 +1,5 @@
 from PIL import Image, ImageDraw, ImageFont, ImageColor
+import colorsys
 
 class FrameRenderer:
     """
@@ -21,6 +22,7 @@ class FrameRenderer:
         self.bg_color = self._hex_to_rgb(bg_color)
         self.text_color = self._hex_to_rgb(text_color)
         self.no_email = no_email
+        self.author_color = None  # Will be set per-frame if author highlighting is enabled
 
         try:
             # This will raise an AttributeError if font_path is None
@@ -31,6 +33,43 @@ class FrameRenderer:
                 print(f"Warning: Font '{font_path}' not found or could not be loaded. Using default font.")
             self.font = ImageFont.load_default()
             self.font_header = self.font
+
+    @staticmethod
+    def generate_author_colors(authors):
+        """
+        Generate a distinct color for each author using HSL color space.
+        
+        :param authors: List of author names.
+        :return: Dictionary mapping author names to RGB hex color strings.
+        """
+        author_colors = {}
+        num_authors = len(authors)
+        
+        for i, author in enumerate(sorted(authors)):
+            # Distribute hues evenly across the color wheel
+            hue = i / max(num_authors, 1)
+            # Use high saturation and medium-high lightness for vibrant, readable colors
+            saturation = 0.7
+            lightness = 0.6
+            
+            # Convert HSL to RGB
+            r, g, b = colorsys.hls_to_rgb(hue, lightness, saturation)
+            # Convert to 0-255 range and format as hex
+            hex_color = "#{:02x}{:02x}{:02x}".format(int(r * 255), int(g * 255), int(b * 255))
+            author_colors[author] = hex_color
+        
+        return author_colors
+
+    def set_author_color(self, color):
+        """
+        Set the author color for the current frame.
+        
+        :param color: Hex color string or None to disable.
+        """
+        if color:
+            self.author_color = self._hex_to_rgb(color)
+        else:
+            self.author_color = None
 
     def _hex_to_rgb(self, hex_color):
         """
@@ -81,7 +120,9 @@ class FrameRenderer:
         author_text = f"Author: {commit_info['author_name']} <{author_email}>"
         date_text = f"Date: {commit_info['date'].strftime('%Y-%m-%d %H:%M:%S')}"
 
-        draw.text((x_padding, current_y), author_text, font=self.font, fill=self.text_color)
+        # Use author color for the author line if enabled
+        author_line_color = self.author_color if self.author_color else self.text_color
+        draw.text((x_padding, current_y), author_text, font=self.font, fill=author_line_color)
         text_height = self.font.getbbox(author_text)[3] - self.font.getbbox(author_text)[1]
         current_y += text_height + line_spacing
 

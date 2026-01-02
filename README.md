@@ -95,6 +95,8 @@ You can customize the output by using the following command-line options:
 | `--no-email` | Do not display author emails in the video. | `False` |
 | `--include` | Glob pattern for files to include (can be used multiple times). | All files |
 | `--exclude` | Glob pattern for files to exclude (can be used multiple times). | None |
+| `--dry-run` | Preview what would be generated without creating the video. | `False` |
+| `--author-colors` | Enable author highlighting with unique colors per author. | `False` |
 
 ### Path Filtering Examples
 
@@ -114,8 +116,28 @@ python -m src.main /path/to/repo output.mp4 --exclude "tests/*" --exclude "*.log
 python -m src.main /path/to/repo output.mp4 --include "*.py" --exclude "*test*"
 ```
 
+### Dry Run Mode
+
+Preview what would be generated before committing to video creation:
+
+```bash
+python -m src.main /path/to/repo output.mp4 --dry-run
+```
+
+This shows commit count, file statistics, estimated duration, date range, and author breakdown.
+
+### Author Highlighting
+
+Color-code the video by author - each contributor gets a unique color:
+
+```bash
+python -m src.main /path/to/repo output.mp4 --author-colors
+```
+
 ## What's New in This Version 🎉
 
+- **Dry Run Mode**: Preview generation stats with `--dry-run` before creating video
+- **Author Highlighting**: Color-code by author with `--author-colors`
 - **Path Filtering**: Focus on specific files/directories using `--include` and `--exclude` glob patterns
 - **Web-based GUI**: User-friendly interface for generating time-lapses without command-line knowledge
 - **Progress Bars**: Visual feedback during CLI generation with tqdm

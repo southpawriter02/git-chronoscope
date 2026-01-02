@@ -189,7 +189,8 @@ function getConfiguration() {
         font_size: parseInt(document.getElementById('font-size').value),
         no_email: document.getElementById('no-email').checked,
         include_patterns: includePatterns,
-        exclude_patterns: excludePatterns
+        exclude_patterns: excludePatterns,
+        author_colors: document.getElementById('author-colors').checked
     };
 }
 
