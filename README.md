@@ -100,6 +100,8 @@ You can customize the output by using the following command-line options:
 | `--cache-dir` | Custom directory for frame cache. | `~/.git-chronoscope/cache` |
 | `--no-cache` | Disable frame caching (always re-render). | `False` |
 | `--clear-cache` | Clear cached frames before generating. | `False` |
+| `--redact-secrets` | Auto-detect and redact sensitive data. | `False` |
+| `--redact-pattern` | Custom regex pattern for redaction (repeatable). | None |
 
 ### Path Filtering Examples
 
@@ -139,6 +141,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Sensitive Data Redaction**: Auto-detect and redact secrets with `--redact-secrets`
 - **Interactive Timeline**: Generate `--format html` for browser-based exploration
 - **Frame Caching**: Speed up regeneration by reusing cached frames for unchanged commits
 - **Dry Run Mode**: Preview generation stats with `--dry-run` before creating video

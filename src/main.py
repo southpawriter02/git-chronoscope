@@ -7,6 +7,7 @@ from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
 from src.cache import FrameCache
 from src.timeline_generator import TimelineGenerator
+from src.redactor import SecretRedactor
 
 try:
     from tqdm import tqdm
@@ -112,6 +113,18 @@ def main():
         action="store_true",
         help="Clear cached frames for this repository before generating."
     )
+    parser.add_argument(
+        "--redact-secrets",
+        action="store_true",
+        help="Auto-detect and redact sensitive data (API keys, tokens, passwords, private keys)."
+    )
+    parser.add_argument(
+        "--redact-pattern",
+        action="append",
+        default=None,
+        metavar="REGEX",
+        help="Custom regex pattern for redaction (can be specified multiple times)."
+    )
 
     args = parser.parse_args()
 
@@ -166,6 +179,14 @@ def main():
             if skipped > 0:
                 print(f"Skipped {skipped} commits that don't affect filtered paths.")
             history = filtered_history
+
+        # --- Initialize secret redactor ---
+        redactor = SecretRedactor(enabled=args.redact_secrets or args.redact_pattern)
+        if args.redact_pattern:
+            for pattern in args.redact_pattern:
+                redactor.add_pattern(f"custom_{len(redactor.patterns)}", pattern)
+        if redactor.enabled:
+            print(f"Secret redaction enabled with {len(redactor.patterns)} patterns.")
 
         if not history:
             print("No commits found matching the filter criteria. Exiting.")
@@ -240,6 +261,10 @@ def main():
                         include_patterns=include_patterns,
                         exclude_patterns=exclude_patterns
                     )
+                
+                # Apply secret redaction
+                if redactor.enabled:
+                    file_contents, _ = redactor.redact_file_tree(file_contents)
                 
                 file_trees.append(file_contents)
             
@@ -328,6 +353,10 @@ def main():
                         include_patterns=include_patterns,
                         exclude_patterns=exclude_patterns
                     )
+                
+                # Apply secret redaction
+                if redactor.enabled:
+                    file_contents, _ = redactor.redact_file_tree(file_contents)
                 
                 # Set author color for this frame if enabled
                 if author_colors:
