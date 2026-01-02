@@ -1,7 +1,8 @@
 # Standalone Executable
 
 ## Implementation Status
-**⏳ NOT IMPLEMENTED**
+**✅ IMPLEMENTED**
+- Implementation: `packaging/build_executable.py`, `.github/workflows/build-executables.yml`
 
 ## 1. Feature Description
 
