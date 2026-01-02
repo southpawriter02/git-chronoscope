@@ -70,6 +70,39 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 
 ---
 
+## Future Features (Not Yet Implemented)
+
+### Distribution (0/5 ⏳)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| PyPI Package | ⏳ | `pip install git-chronoscope` |
+| Homebrew Formula | ⏳ | `brew install git-chronoscope` |
+| Standalone Executable | ⏳ | No Python required |
+| Docker Hub Image | ⏳ | Official Docker image |
+| npm Package | ⏳ | Node.js wrapper |
+
+### New Integrations (0/4 ⏳)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Slack Integration | ⏳ | Slash command bot |
+| Discord Bot | ⏳ | Server bot commands |
+| Mobile Apps | ⏳ | iOS/Android apps |
+| Linear Integration | ⏳ | Issue tracking |
+
+### New Advanced Features (0/5 ⏳)
+
+| Feature | Status | Description |
+|---------|--------|-------------|
+| Web Dashboard | ⏳ | SaaS web interface |
+| AI Narration | ⏳ | LLM-generated voiceover |
+| Custom Themes | ⏳ | Visual customization |
+| Analytics Dashboard | ⏳ | Code insights |
+| Real-time Streaming | ⏳ | Live preview |
+
+---
+
 ## Sections
 
 - **Core Functionality:** The essential features required for the initial version of the tool.
@@ -78,5 +111,6 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 - **Security:** Measures to ensure the agent operates safely and does not expose sensitive information.
 - **Performance and Scalability:** Improvements to ensure the tool is fast and can handle large repositories.
 - **Non-Functional Requirements:** System requirements, dependencies, limitations, and documentation.
+- **Distribution:** Packaging and distribution options for easy installation.
 
 Each feature is detailed in its own Markdown file, located in the corresponding subdirectory.
