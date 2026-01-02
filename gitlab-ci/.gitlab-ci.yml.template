@@ -1,0 +1,48 @@
+# Git Chronoscope CI/CD Template
+# Add this to your .gitlab-ci.yml
+
+stages:
+  - build
+  - generate-timelapse
+
+variables:
+  CHRONOSCOPE_OUTPUT: "timelapse.mp4"
+  CHRONOSCOPE_FPS: "5"
+  CHRONOSCOPE_FORMAT: "mp4"
+
+generate-timelapse:
+  stage: generate-timelapse
+  image: python:3.11
+  before_script:
+    - apt-get update && apt-get install -y git ffmpeg
+    - pip install -r requirements.txt
+  script:
+    - |
+      python -m src.main . ${CHRONOSCOPE_OUTPUT} \
+        --fps ${CHRONOSCOPE_FPS} \
+        --format ${CHRONOSCOPE_FORMAT}
+  artifacts:
+    paths:
+      - ${CHRONOSCOPE_OUTPUT}
+    expire_in: 1 week
+  rules:
+    - if: $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+
+# Optional: Comment artifact link on merge request
+comment-mr:
+  stage: generate-timelapse
+  needs:
+    - generate-timelapse
+  script:
+    - |
+      if [ -n "$CI_MERGE_REQUEST_IID" ]; then
+        ARTIFACT_URL="${CI_SERVER_URL}/${CI_PROJECT_PATH}/-/jobs/${CI_JOB_ID}/artifacts/file/${CHRONOSCOPE_OUTPUT}"
+        curl --request POST \
+          --header "PRIVATE-TOKEN: ${GITLAB_TOKEN}" \
+          --form "body=🎬 Time-lapse generated: [View Video](${ARTIFACT_URL})" \
+          "${CI_API_V4_URL}/projects/${CI_PROJECT_ID}/merge_requests/${CI_MERGE_REQUEST_IID}/notes"
+      fi
+  rules:
+    - if: $CI_PIPELINE_SOURCE == "merge_request_event"
+  allow_failure: true
