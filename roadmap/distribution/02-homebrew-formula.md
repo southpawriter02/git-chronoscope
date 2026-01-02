@@ -1,7 +1,8 @@
 # Homebrew Formula
 
 ## Implementation Status
-**⏳ NOT IMPLEMENTED**
+**✅ IMPLEMENTED**
+- Implementation: `Formula/git-chronoscope.rb`, `setup.py`
 
 ## 1. Feature Description
 
