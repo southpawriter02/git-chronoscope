@@ -1,5 +1,9 @@
 # 05: Restricted Shell for Commands
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/sandbox.py`
+
 ## Description
 This feature ensures that all shell commands executed by the agent run in a restricted, sandboxed shell environment rather than a standard shell like `bash` or `zsh`. This environment strictly limits which system calls can be made, which binaries can be executed, and what parts of the filesystem are accessible.
 

@@ -1,5 +1,9 @@
 # Customizable Rendering Options
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--fps, --resolution, etc.`
+
 ## 1. Feature Description
 
 This feature provides users with options to customize the appearance of the generated time-lapse video. This allows for the creation of more visually appealing and informative visualizations.

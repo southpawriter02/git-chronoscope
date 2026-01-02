@@ -1,5 +1,9 @@
 # Commit Information Overlay
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/frame_renderer.py`
+
 ## 1. Feature Description
 
 This feature enhances the basic time-lapse by overlaying commit information onto each frame of the video. This provides context to the viewer, helping them understand what changes are being made and by whom.

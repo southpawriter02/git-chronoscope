@@ -1,5 +1,9 @@
 # Author Highlighting
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--highlight-authors CLI flag`
+
 ## 1. Feature Description
 
 This feature highlights the contributions of different authors in the time-lapse video. It helps in visualizing who worked on which parts of the codebase and at what time.

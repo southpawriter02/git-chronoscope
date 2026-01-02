@@ -1,5 +1,9 @@
 # 09: Action Approval for High-Risk Operations
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--dry-run CLI flag`
+
 ## Description
 This feature requires the agent to obtain explicit user approval before executing actions that are considered high-risk, such as deleting multiple files, force-pushing to a Git branch, or running a command known to be potentially destructive.
 

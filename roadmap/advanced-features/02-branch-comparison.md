@@ -1,5 +1,9 @@
 # Branch Comparison
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--compare CLI flag`
+
 ## 1. Feature Description
 
 This feature enables users to create a time-lapse that visualizes the differences between two branches. This is particularly useful for understanding the evolution of a feature branch compared to the main branch, or for visualizing the changes in a pull request.

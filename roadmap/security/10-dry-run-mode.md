@@ -1,5 +1,9 @@
 # 10: "Dry Run" Mode
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--dry-run CLI flag`
+
 ## Description
 This feature provides a "dry run" or "preview" mode where the agent describes the sequence of actions it intends to take without actually executing them. This allows the user to review and approve the agent's entire plan before any changes are made to the codebase.
 

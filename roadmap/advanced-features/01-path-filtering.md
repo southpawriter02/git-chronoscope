@@ -1,5 +1,9 @@
 # Path Filtering
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--include, --exclude CLI flags`
+
 ## 1. Feature Description
 
 This feature allows users to focus the time-lapse on specific files or directories within the repository. This is useful for large repositories where visualizing the entire project is not practical or informative.

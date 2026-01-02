@@ -1,5 +1,9 @@
 # 01: Sensitive Data Redaction
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/redactor.py`
+
 ## Description
 This feature automatically detects and redacts sensitive information in both user inputs and agent outputs. The goal is to prevent the accidental exposure of secrets like API keys, passwords, private keys, and other Personally Identifiable Information (PII) that might be present in the repository's files or in the user's conversation with the agent.
 

@@ -1,5 +1,9 @@
 # Basic Time-Lapse Generation
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/main.py`
+
 ## 1. Feature Description
 
 This is the core feature of the Git Time-Lapse tool. It allows users to generate a video file that visualizes the history of a Git repository. The video will be a sequence of frames, where each frame represents the state of the repository at a specific commit.

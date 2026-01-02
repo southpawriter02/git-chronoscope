@@ -1,5 +1,9 @@
 # 03: File Access Control (.agentignore)
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/access_control.py`
+
 ## Description
 This feature allows repository owners to define specific files and directories that the agent is forbidden from accessing. This is analogous to `.gitignore`, but it controls the agent's access rather than Git's tracking. A file, for example `.agentignore`, in the repository root will specify these restrictions.
 

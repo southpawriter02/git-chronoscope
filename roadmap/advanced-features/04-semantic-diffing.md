@@ -1,5 +1,9 @@
 # Semantic Diffing
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--show-diff CLI flag`
+
 ## 1. Feature Description
 
 This feature goes beyond simple text-based diffs and visualizes changes in a way that understands the structure and syntax of the code. For example, renaming a function would be shown as a "rename" operation, not as a deletion and an addition of lines.

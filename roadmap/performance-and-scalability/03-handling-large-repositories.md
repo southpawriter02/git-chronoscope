@@ -1,5 +1,9 @@
 # Handling Large Repositories
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--sample-rate, --max-commits CLI flags`
+
 ## 1. Feature Description
 
 This feature focuses on optimizing the tool to work efficiently with very large repositories, both in terms of the number of commits and the size of the files.

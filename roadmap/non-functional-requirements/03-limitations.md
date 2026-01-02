@@ -1,5 +1,9 @@
 # Limitations
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `LIMITATIONS.md`
+
 ## 1. Description
 
 This document describes the known limitations and constraints of the Git Time-Lapse tool.

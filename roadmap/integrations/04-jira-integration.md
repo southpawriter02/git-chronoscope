@@ -1,5 +1,9 @@
 # Jira Integration
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/jira_extractor.py`
+
 ## 1. Feature Description
 
 This feature integrates the Git Time-Lapse tool with Jira, allowing users to visualize the development progress of a Jira issue.

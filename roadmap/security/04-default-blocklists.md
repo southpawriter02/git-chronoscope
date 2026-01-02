@@ -1,5 +1,9 @@
 # 04: Default Blocklists for Files and Commands
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/access_control.py`
+
 ## Description
 This feature provides a built-in, non-optional blocklist of sensitive file paths and dangerous shell commands that the agent is forbidden from accessing or executing. This serves as a baseline layer of security, independent of any user-configured rules like `.agentignore`.
 

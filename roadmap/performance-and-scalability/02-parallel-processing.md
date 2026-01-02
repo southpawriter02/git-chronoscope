@@ -1,5 +1,9 @@
 # Parallel Processing
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `--workers CLI flag`
+
 ## 1. Feature Description
 
 This feature leverages multiple CPU cores to speed up the time-lapse generation process by parallelizing the work.

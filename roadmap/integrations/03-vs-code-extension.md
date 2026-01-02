@@ -1,5 +1,9 @@
 # Visual Studio Code Extension
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `vscode-extension/`
+
 ## 1. Feature Description
 
 This feature provides a Visual Studio Code extension that allows users to generate and view git time-lapses directly within the editor.

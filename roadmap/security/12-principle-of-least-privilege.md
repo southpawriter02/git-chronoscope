@@ -1,5 +1,9 @@
 # 12: Principle of Least Privilege (Authorization)
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/permissions.py`
+
 ## Description
 This feature ensures that the agent operates with the minimum level of permissions required to complete its assigned task. It inherits its permissions from the user who invoked it, and cannot perform any action that the user themselves would not be authorized to do.
 

@@ -1,5 +1,9 @@
 # 06: Filesystem Sandboxing
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/sandbox.py`
+
 ## Description
 This feature ensures that the agent can only read and write files within the repository's designated working directory. It provides a strong guarantee that the agent cannot access or modify any other part of the filesystem on the machine where it is running.
 

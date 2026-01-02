@@ -1,5 +1,9 @@
 # 08: Network Egress Control
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/environment.py`
+
 ## Description
 This feature controls the agent's ability to make outbound network connections to the internet. By default, all network access should be disabled. If access is required, it should be restricted to an explicit allow-list of trusted domains.
 

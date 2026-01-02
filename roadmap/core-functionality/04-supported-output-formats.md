@@ -1,5 +1,9 @@
 # Supported Output Formats
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `mp4, gif, html formats`
+
 ## 1. Feature Description
 
 This feature allows users to choose the output format for the generated time-lapse. Different formats are suitable for different use cases, such as sharing on social media, embedding in websites, or for archival purposes.

@@ -1,5 +1,9 @@
 # Caching Mechanisms
 
+## Implementation Status
+**✅ IMPLEMENTED**
+- Implementation: `src/cache.py`
+
 ## 1. Feature Description
 
 This feature implements caching to speed up the time-lapse generation process, especially when regenerating a video for a repository that has already been processed.
