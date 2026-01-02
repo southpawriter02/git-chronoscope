@@ -113,6 +113,8 @@ You can customize the output by using the following command-line options:
 | `--strict-input` | Enable strict input validation (blocks suspicious patterns). | `False` |
 | `--no-default-blocklist` | Disable default blocklist of sensitive files. | `False` |
 | `--sandbox` | Enable filesystem sandboxing (restrict to repo dir). | `False` |
+| `--offline` | Confirm offline mode (no network required). | `False` |
+| `--cleanup` | Aggressive cleanup of temp files after execution. | `False` |
 
 ### Path Filtering Examples
 
@@ -152,6 +154,8 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Ephemeral Environments**: Auto-cleanup temp files with `--cleanup`
+- **Offline Mode**: Confirm no network needed with `--offline`
 - **Filesystem Sandboxing**: Restrict file access to repo with `--sandbox`
 - **Default Blocklists**: Sensitive files (.env, *.pem) blocked by default
 - **Input Validation**: Prompt injection defense with `--strict-input`

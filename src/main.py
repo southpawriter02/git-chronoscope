@@ -14,6 +14,7 @@ from src.diff_utils import DiffCalculator
 from src.access_control import AccessControl
 from src.input_sanitizer import InputSanitizer
 from src.sandbox import Sandbox
+from src.environment import EnvironmentManager, NetworkPolicy
 
 try:
     from tqdm import tqdm
@@ -255,12 +256,31 @@ def main():
         action="store_true",
         help="Enable filesystem sandboxing (restrict file access to repo directory)."
     )
+    parser.add_argument(
+        "--offline",
+        action="store_true",
+        help="Confirm offline mode (git-chronoscope requires no network access)."
+    )
+    parser.add_argument(
+        "--cleanup",
+        action="store_true",
+        help="Aggressive cleanup of temp files after execution."
+    )
 
     args = parser.parse_args()
 
-    # Create a temporary directory to store frames
-    temp_dir = tempfile.mkdtemp()
+    # --- Initialize Environment Manager ---
+    env_manager = EnvironmentManager(cleanup_on_exit=True)
+    
+    # Create a temporary directory to store frames (tracked for cleanup)
+    temp_dir = env_manager.create_temp_dir(prefix="chronoscope_frames_")
     print(f"Using temporary directory for frames: {temp_dir}")
+    
+    # Document offline capability
+    if args.offline:
+        network_info = NetworkPolicy.get_network_requirements()
+        print(f"Offline mode: {network_info['description']}")
+
 
     try:
         # --- 1. Initialize modules ---
