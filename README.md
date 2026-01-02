@@ -115,6 +115,7 @@ You can customize the output by using the following command-line options:
 | `--sandbox` | Enable filesystem sandboxing (restrict to repo dir). | `False` |
 | `--offline` | Confirm offline mode (no network required). | `False` |
 | `--cleanup` | Aggressive cleanup of temp files after execution. | `False` |
+| `--audit-log` | Path to audit log file for operation logging. | None |
 
 ### Path Filtering Examples
 
@@ -154,6 +155,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Immutable Audit Logs**: Operation logging with `--audit-log PATH`
 - **Ephemeral Environments**: Auto-cleanup temp files with `--cleanup`
 - **Offline Mode**: Confirm no network needed with `--offline`
 - **Filesystem Sandboxing**: Restrict file access to repo with `--sandbox`

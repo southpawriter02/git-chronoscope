@@ -15,6 +15,7 @@ from src.access_control import AccessControl
 from src.input_sanitizer import InputSanitizer
 from src.sandbox import Sandbox
 from src.environment import EnvironmentManager, NetworkPolicy
+from src.audit import AuditLogger
 
 try:
     from tqdm import tqdm
@@ -266,8 +267,19 @@ def main():
         action="store_true",
         help="Aggressive cleanup of temp files after execution."
     )
+    parser.add_argument(
+        "--audit-log",
+        default=None,
+        metavar="PATH",
+        help="Path to audit log file for immutable operation logging."
+    )
 
     args = parser.parse_args()
+
+    # --- Initialize Audit Logger ---
+    audit_logger = AuditLogger(log_path=args.audit_log)
+    if audit_logger.enabled:
+        print(f"Audit logging enabled: {args.audit_log}")
 
     # --- Initialize Environment Manager ---
     env_manager = EnvironmentManager(cleanup_on_exit=True)
@@ -280,6 +292,9 @@ def main():
     if args.offline:
         network_info = NetworkPolicy.get_network_requirements()
         print(f"Offline mode: {network_info['description']}")
+
+    # Log session start
+    audit_logger.log_start(args.repo_path, args.output_path, vars(args))
 
 
     try:
