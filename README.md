@@ -116,6 +116,7 @@ You can customize the output by using the following command-line options:
 | `--offline` | Confirm offline mode (no network required). | `False` |
 | `--cleanup` | Aggressive cleanup of temp files after execution. | `False` |
 | `--audit-log` | Path to audit log file for operation logging. | None |
+| `--read-only` | Confirm read-only operation (never modifies repo). | `False` |
 
 ### Path Filtering Examples
 
@@ -155,6 +156,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Least Privilege**: Read-only operation with `--read-only`
 - **Immutable Audit Logs**: Operation logging with `--audit-log PATH`
 - **Ephemeral Environments**: Auto-cleanup temp files with `--cleanup`
 - **Offline Mode**: Confirm no network needed with `--offline`

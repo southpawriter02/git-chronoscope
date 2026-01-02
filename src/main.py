@@ -16,6 +16,7 @@ from src.input_sanitizer import InputSanitizer
 from src.sandbox import Sandbox
 from src.environment import EnvironmentManager, NetworkPolicy
 from src.audit import AuditLogger
+from src.permissions import PermissionPolicy
 
 try:
     from tqdm import tqdm
@@ -273,8 +274,18 @@ def main():
         metavar="PATH",
         help="Path to audit log file for immutable operation logging."
     )
+    parser.add_argument(
+        "--read-only",
+        action="store_true",
+        help="Confirm read-only operation (git-chronoscope never modifies the repository)."
+    )
 
     args = parser.parse_args()
+
+    # --- Display Permission Policy if requested ---
+    if args.read_only:
+        policy = PermissionPolicy(read_only_mode=True)
+        print(policy.get_policy_summary())
 
     # --- Initialize Audit Logger ---
     audit_logger = AuditLogger(log_path=args.audit_log)
