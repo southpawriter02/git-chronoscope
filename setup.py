@@ -8,7 +8,7 @@ with open("README.md", "r", encoding="utf-8") as fh:
 
 setup(
     name="git-chronoscope",
-    version="0.9.0-beta.1",
+    version="0.9.0-beta.2",
     author="Git Chronoscope Team",
     author_email="chronoscope@example.com",
     description="Generate time-lapse visualizations of Git repository evolution",

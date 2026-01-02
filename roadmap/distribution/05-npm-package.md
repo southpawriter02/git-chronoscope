@@ -1,7 +1,15 @@
 # npm Package (Node.js Wrapper)
 
 ## Implementation Status
-**⏳ NOT IMPLEMENTED**
+**✅ IMPLEMENTED** (v0.9.0-beta.2)
+
+## Implementation Details
+
+- **Package Location:** `npm-package/`
+- **CLI Wrapper:** `npm-package/bin/cli.js`
+- **Programmatic API:** `npm-package/lib/index.js`
+- **TypeScript Definitions:** `npm-package/types/index.d.ts`
+- **CI/CD Workflow:** `.github/workflows/npm-publish.yml`
 
 ## 1. Feature Description
 

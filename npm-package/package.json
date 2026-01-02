@@ -1,0 +1,51 @@
+{
+  "name": "git-chronoscope",
+  "version": "0.9.0-beta.2",
+  "description": "Generate time-lapse visualizations of Git repository evolution",
+  "main": "lib/index.js",
+  "types": "types/index.d.ts",
+  "bin": {
+    "git-chronoscope": "bin/cli.js"
+  },
+  "scripts": {
+    "test": "node test/test.js",
+    "prepublishOnly": "node lib/utils.js --check"
+  },
+  "keywords": [
+    "git",
+    "visualization",
+    "time-lapse",
+    "video",
+    "history",
+    "repository",
+    "animation",
+    "mp4",
+    "gif"
+  ],
+  "author": "Git Chronoscope Team",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/southpawriter02/git-chronoscope.git"
+  },
+  "bugs": {
+    "url": "https://github.com/southpawriter02/git-chronoscope/issues"
+  },
+  "homepage": "https://github.com/southpawriter02/git-chronoscope#readme",
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "os": [
+    "darwin",
+    "linux",
+    "win32"
+  ],
+  "files": [
+    "bin/",
+    "lib/",
+    "types/",
+    "README.md"
+  ],
+  "dependencies": {},
+  "devDependencies": {}
+}

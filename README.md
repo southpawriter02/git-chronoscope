@@ -1,6 +1,7 @@
 # git-chronoscope
 
 [![PyPI version](https://badge.fury.io/py/git-chronoscope.svg)](https://badge.fury.io/py/git-chronoscope)
+[![npm version](https://badge.fury.io/js/git-chronoscope.svg)](https://badge.fury.io/js/git-chronoscope)
 [![Docker Pulls](https://img.shields.io/docker/pulls/southpawriter02/git-chronoscope)](https://hub.docker.com/r/southpawriter02/git-chronoscope)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
@@ -25,6 +26,9 @@ pip install git-chronoscope
 
 # Homebrew (macOS/Linux)
 brew tap southpawriter02/git-chronoscope && brew install git-chronoscope
+
+# npm (Node.js)
+npm install -g git-chronoscope
 
 # Docker
 docker pull southpawriter02/git-chronoscope

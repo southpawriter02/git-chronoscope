@@ -11,7 +11,7 @@ Git-chronoscope follows [Semantic Versioning](https://semver.org/):
 
 ## Current Status
 
-**Version**: 0.9.0 (beta)
+**Version**: 0.9.0-beta.2
 
 ### What's Complete
 - Core time-lapse generation functionality
@@ -19,11 +19,10 @@ Git-chronoscope follows [Semantic Versioning](https://semver.org/):
 - Full security suite (12/12 features)
 - Performance optimizations
 - CI/CD integrations (GitHub, GitLab, VS Code, Jira)
-- Distribution infrastructure (PyPI, Homebrew, executables)
+- Distribution infrastructure (PyPI, Homebrew, executables, Docker Hub, npm)
 
 ### What's In Progress
-- Docker Hub image publishing
-- npm package wrapper
+- None (ready for beta.3)
 
 ### What's Planned for v1.0
 - Slack integration
@@ -35,24 +34,26 @@ Git-chronoscope follows [Semantic Versioning](https://semver.org/):
 ## Release Schedule
 
 ### v0.9.0-beta.1 - Distribution Foundation
-**Status**: In Progress
+**Status**: ✅ Complete (2026-01-02)
 
-Establish core distribution channels:
+Established core distribution channels:
 - [x] PyPI package configuration
 - [x] Homebrew formula
 - [x] Standalone executable build scripts
 - [x] Docker Hub CI workflow
-- [ ] First PyPI publication
-- [ ] First Docker Hub publication
-- [ ] First GitHub Release with executables
+- [x] INSTALL.md documentation
+- [x] CHANGELOG.md created
+- [x] Version consistency across all files
 
 ### v0.9.0-beta.2 - npm Package
-**Status**: Planned
+**Status**: ✅ Complete (2026-01-02)
 
 JavaScript ecosystem distribution:
-- [ ] Node.js CLI wrapper
-- [ ] npx zero-install support
-- [ ] npm registry publication
+- [x] Node.js CLI wrapper (`npm-package/bin/cli.js`)
+- [x] Programmatic API (`npm-package/lib/index.js`)
+- [x] TypeScript definitions (`npm-package/types/index.d.ts`)
+- [x] npx zero-install support
+- [x] npm publish workflow (`.github/workflows/npm-publish.yml`)
 
 ### v0.9.0-beta.3 - Slack Integration
 **Status**: Planned

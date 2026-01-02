@@ -1,0 +1,23 @@
+# Development files
+.git/
+.github/
+test/
+*.test.js
+.eslintrc*
+.prettierrc*
+jest.config.js
+
+# Build artifacts
+*.log
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# Coverage
+coverage/
+.nyc_output/

@@ -29,6 +29,14 @@ brew install git-chronoscope
 docker pull southpawriter02/git-chronoscope
 ```
 
+### npm (Node.js)
+
+```bash
+npm install -g git-chronoscope
+# or run directly with npx
+npx git-chronoscope --help
+```
+
 ---
 
 ## Detailed Installation Instructions
@@ -107,7 +115,30 @@ docker run -v /path/to/repo:/repo -v /path/to/output:/output \
   --format gif --resolution 720p --fps 5
 ```
 
-### Option 5: From Source
+### Option 5: npm Package (Node.js)
+
+For JavaScript/TypeScript developers:
+
+```bash
+# Install globally
+npm install -g git-chronoscope
+
+# Or run directly without installing
+npx git-chronoscope /path/to/repo output.mp4
+
+# Use programmatically in your Node.js code
+const chronoscope = require('git-chronoscope');
+await chronoscope.generate('/path/to/repo', 'output.mp4', { format: 'mp4' });
+```
+
+**Requirements:**
+- Node.js 14.0.0 or higher
+- Python 3.7+ with git-chronoscope installed (`pip install git-chronoscope`)
+- FFmpeg installed and in PATH
+
+The npm package wraps the Python CLI, providing a convenient interface for Node.js projects and CI/CD pipelines that use JavaScript tooling.
+
+### Option 6: From Source
 
 For development or to get the latest changes:
 
@@ -131,7 +162,7 @@ pip install -e .
 git-chronoscope /path/to/repo output.mp4
 ```
 
-### Option 6: GitHub Actions
+### Option 7: GitHub Actions
 
 Use git-chronoscope directly in your CI/CD pipeline:
 
@@ -214,6 +245,11 @@ pip uninstall git-chronoscope
 ```bash
 brew uninstall git-chronoscope
 brew untap southpawriter02/git-chronoscope
+```
+
+### npm
+```bash
+npm uninstall -g git-chronoscope
 ```
 
 ### Docker

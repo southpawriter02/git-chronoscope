@@ -12,7 +12,7 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 - Performance & Scalability: 3/3 ✅
 - Integrations: 4/4 ✅
 - Non-Functional: 4/4 ✅
-- Distribution: 3/5 (in progress)
+- Distribution: 4/5 (in progress)
 - New Integrations: 0/4 (planned)
 - New Advanced Features: 0/5 (planned for post-1.0)
 
@@ -80,7 +80,7 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 
 ---
 
-## Distribution (3/5 ✅)
+## Distribution (4/5 ✅)
 
 | Feature | Status | Description | Implementation |
 |---------|--------|-------------|----------------|
@@ -88,7 +88,7 @@ This document outlines the roadmap for the Git Time-Lapse project. The project a
 | Homebrew Formula | ✅ | `brew install git-chronoscope` | `Formula/git-chronoscope.rb` |
 | Standalone Executable | ✅ | No Python required | `packaging/`, `.github/workflows/build-executables.yml` |
 | Docker Hub Image | ⏳ | Official Docker image | `Dockerfile` (not yet published) |
-| npm Package | ⏳ | Node.js wrapper | Not started |
+| npm Package | ✅ | `npm install git-chronoscope` | `npm-package/`, `.github/workflows/npm-publish.yml` |
 
 ---
 

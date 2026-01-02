@@ -7,6 +7,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.9.0-beta.2] - 2026-01-02
+
+npm package release for JavaScript ecosystem distribution.
+
+### Added
+- npm package for Node.js users (`npm install -g git-chronoscope` or `npx git-chronoscope`)
+- Programmatic JavaScript/TypeScript API for integration
+- TypeScript type definitions
+- npm publish workflow for automated releases
+
+### Technical Details
+The npm package is a wrapper that requires Python and the git-chronoscope Python package to be installed. It provides:
+- CLI wrapper that passes through all arguments to the Python CLI
+- Programmatic API via `require('git-chronoscope')`
+- Dependency checking utilities (Python version, FFmpeg, etc.)
+- Helpful error messages when prerequisites are missing
+
 ## [0.9.0-beta.1] - 2026-01-02
 
 First public beta release establishing distribution foundation.
