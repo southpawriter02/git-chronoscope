@@ -117,6 +117,7 @@ You can customize the output by using the following command-line options:
 | `--cleanup` | Aggressive cleanup of temp files after execution. | `False` |
 | `--audit-log` | Path to audit log file for operation logging. | None |
 | `--read-only` | Confirm read-only operation (never modifies repo). | `False` |
+| `--jira-issue` | Filter commits by Jira issue key (e.g., PROJ-123). | None |
 
 ### Path Filtering Examples
 

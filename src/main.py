@@ -17,6 +17,7 @@ from src.sandbox import Sandbox
 from src.environment import EnvironmentManager, NetworkPolicy
 from src.audit import AuditLogger
 from src.permissions import PermissionPolicy
+from src.jira_extractor import JiraExtractor
 
 try:
     from tqdm import tqdm
@@ -279,6 +280,12 @@ def main():
         action="store_true",
         help="Confirm read-only operation (git-chronoscope never modifies the repository)."
     )
+    parser.add_argument(
+        "--jira-issue",
+        default=None,
+        metavar="KEY",
+        help="Filter commits by Jira issue key (e.g., PROJ-123)."
+    )
 
     args = parser.parse_args()
 
@@ -456,6 +463,13 @@ def main():
             sampled = history[::args.sample_rate]
             print(f"Sampling every {args.sample_rate} commits: {len(history)} → {len(sampled)} commits")
             history = sampled
+        
+        # Jira issue filtering
+        if args.jira_issue:
+            jira_extractor = JiraExtractor()
+            filtered = jira_extractor.filter_commits_by_issue(history, args.jira_issue)
+            print(f"Filtering by Jira issue {args.jira_issue}: {len(history)} → {len(filtered)} commits")
+            history = filtered
         
         # Large repo warning
         if len(history) > 1000:
