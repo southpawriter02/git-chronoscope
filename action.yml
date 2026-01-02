@@ -1,0 +1,63 @@
+name: 'Git Chronoscope Time-Lapse'
+description: 'Generate a time-lapse video or interactive timeline of your Git repository history'
+author: 'git-chronoscope'
+
+branding:
+  icon: 'git-commit'
+  color: 'purple'
+
+inputs:
+  format:
+    description: 'Output format: mp4, gif, or html'
+    required: false
+    default: 'mp4'
+  output-path:
+    description: 'Path for the generated output file'
+    required: false
+    default: 'timelapse.mp4'
+  branch:
+    description: 'Branch to generate time-lapse from'
+    required: false
+    default: ''
+  resolution:
+    description: 'Video resolution: 720p, 1080p, or 4k'
+    required: false
+    default: '1080p'
+  fps:
+    description: 'Frames per second for video output'
+    required: false
+    default: '2'
+  include:
+    description: 'Glob patterns for files to include (comma-separated)'
+    required: false
+    default: ''
+  exclude:
+    description: 'Glob patterns for files to exclude (comma-separated)'
+    required: false
+    default: ''
+  redact-secrets:
+    description: 'Enable automatic secret redaction'
+    required: false
+    default: 'false'
+  author-colors:
+    description: 'Enable author highlighting with unique colors'
+    required: false
+    default: 'false'
+
+outputs:
+  output-file:
+    description: 'Path to the generated output file'
+
+runs:
+  using: 'docker'
+  image: 'Dockerfile'
+  args:
+    - ${{ inputs.format }}
+    - ${{ inputs.output-path }}
+    - ${{ inputs.branch }}
+    - ${{ inputs.resolution }}
+    - ${{ inputs.fps }}
+    - ${{ inputs.include }}
+    - ${{ inputs.exclude }}
+    - ${{ inputs.redact-secrets }}
+    - ${{ inputs.author-colors }}

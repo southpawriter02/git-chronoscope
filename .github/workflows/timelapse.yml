@@ -1,0 +1,38 @@
+name: Generate Time-Lapse
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      format:
+        description: 'Output format (mp4, gif, html)'
+        required: false
+        default: 'html'
+
+jobs:
+  generate-timelapse:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history needed for time-lapse
+      
+      - name: Generate Time-Lapse
+        uses: ./
+        id: timelapse
+        with:
+          format: ${{ github.event.inputs.format || 'html' }}
+          output-path: timelapse.${{ github.event.inputs.format || 'html' }}
+          resolution: '1080p'
+          redact-secrets: 'true'
+          author-colors: 'true'
+      
+      - name: Upload Time-Lapse as Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: repository-timelapse
+          path: ${{ steps.timelapse.outputs.output-file }}
+          retention-days: 30

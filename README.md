@@ -152,12 +152,25 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 - **Better Documentation**: Comprehensive guides for both beginners and power users
 - **Easy Launcher**: One-command start with `launch_gui.py`
 
+## GitHub Actions
+
+Add to your workflow:
+
+```yaml
+- uses: your-username/git-chronoscope@v1
+  with:
+    format: html
+    output-path: timelapse.html
+    redact-secrets: 'true'
+```
+
+See [`.github/workflows/timelapse.yml`](.github/workflows/timelapse.yml) for a full example.
+
 ## Future Enhancements
 
 The project roadmap includes exciting features like:
 - VS Code extension
-- GitHub Actions integration
-- Path filtering and branch comparison
+- Branch comparison
 - More export formats
 
 See the [roadmap](roadmap/README.md) for detailed plans.
