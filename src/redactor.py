@@ -3,7 +3,10 @@ Sensitive Data Redaction module for git-chronoscope.
 Auto-detects and redacts secrets like API keys, tokens, passwords, and private keys.
 """
 import re
+import logging
 from typing import Dict, List, Optional, Tuple
+
+logger = logging.getLogger(__name__)
 
 
 class SecretRedactor:

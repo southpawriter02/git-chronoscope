@@ -3,7 +3,10 @@ Filesystem Sandboxing for git-chronoscope.
 Constrains file access to the repository directory only.
 """
 import os
+import logging
 from typing import Tuple, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class Sandbox:

@@ -6,8 +6,11 @@ import os
 import hashlib
 import shutil
 import json
+import logging
 from pathlib import Path
 from PIL import Image
+
+logger = logging.getLogger(__name__)
 
 
 class FrameCache:
