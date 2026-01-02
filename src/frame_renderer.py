@@ -112,6 +112,144 @@ class FrameRenderer:
 
         return img
 
+    def render_diff_frame(self, commit_info, file_contents, tree_diff, line_changes):
+        """
+        Renders a frame with diff highlighting.
+        
+        :param commit_info: A dictionary containing the commit metadata.
+        :param file_contents: A dictionary mapping file paths to their content.
+        :param tree_diff: Dictionary mapping file paths to status (added/deleted/modified).
+        :param line_changes: Dictionary mapping file paths to line change info.
+        :return: A Pillow Image object.
+        """
+        img = Image.new('RGB', (self.width, self.height), color=self.bg_color)
+        draw = ImageDraw.Draw(img)
+        
+        x_padding = 30
+        y_padding = 20
+        line_spacing = 8
+        
+        # Diff colors
+        added_color = (40, 80, 40)      # Dark green background
+        deleted_color = (80, 40, 40)    # Dark red background
+        modified_color = (80, 80, 40)   # Dark yellow background
+        added_text = (100, 255, 100)    # Bright green text
+        deleted_text = (255, 100, 100)  # Bright red text
+        modified_text = (255, 255, 100) # Bright yellow text
+        
+        # --- 1. Render Header (Commit Info) ---
+        header_height = self._render_commit_info(draw, commit_info, x_padding, y_padding, line_spacing)
+        
+        # --- 2. Render Diff Summary ---
+        current_y = header_height
+        
+        added_count = sum(1 for s in tree_diff.values() if s == 'added')
+        deleted_count = sum(1 for s in tree_diff.values() if s == 'deleted')
+        modified_count = sum(1 for s in tree_diff.values() if s == 'modified')
+        
+        if added_count or deleted_count or modified_count:
+            diff_summary = f"Changes: +{added_count} added, -{deleted_count} deleted, ~{modified_count} modified"
+            draw.text((x_padding, current_y), diff_summary, font=self.font, fill=(180, 180, 180))
+            text_height = self.font.getbbox(diff_summary)[3] - self.font.getbbox(diff_summary)[1]
+            current_y += text_height + line_spacing
+        
+        # --- 3. Render separator ---
+        draw.line([(x_padding, current_y), (self.width - x_padding, current_y)], fill=self.text_color, width=1)
+        current_y += y_padding
+        
+        # --- 4. Render Files with Diff Highlighting ---
+        self._render_file_content_with_diff(
+            draw, file_contents, tree_diff, line_changes,
+            x_padding, current_y, y_padding, line_spacing,
+            added_color, deleted_color, modified_color,
+            added_text, deleted_text, modified_text
+        )
+        
+        return img
+    
+    def _render_file_content_with_diff(self, draw, file_contents, tree_diff, line_changes,
+                                        x_padding, y_start, y_padding, line_spacing,
+                                        added_bg, deleted_bg, modified_bg,
+                                        added_text, deleted_text, modified_text):
+        """Renders file content with diff highlighting."""
+        current_y = y_start
+        file_header_font = self.font_header
+        code_font = self.font
+        
+        # Sort files, showing changed files first
+        def sort_key(f):
+            status = tree_diff.get(f, 'unchanged')
+            priority = {'added': 0, 'modified': 1, 'deleted': 2, 'unchanged': 3}
+            return (priority.get(status, 4), f)
+        
+        sorted_files = sorted(file_contents.keys(), key=sort_key)
+        
+        for file_path in sorted_files:
+            content = file_contents[file_path]
+            file_status = tree_diff.get(file_path, 'unchanged')
+            file_line_changes = line_changes.get(file_path, {})
+            
+            # Stop if we run out of vertical space
+            if current_y > self.height - y_padding - 50:
+                draw.text((x_padding, current_y), "...", font=code_font, fill=self.text_color)
+                return
+            
+            # Draw file path header with status indicator
+            status_icon = {
+                'added': '+ ',
+                'deleted': '- ',
+                'modified': '~ ',
+                'unchanged': '  '
+            }.get(file_status, '  ')
+            
+            header_color = {
+                'added': added_text,
+                'deleted': deleted_text,
+                'modified': modified_text,
+                'unchanged': self.text_color
+            }.get(file_status, self.text_color)
+            
+            file_header_text = f"{status_icon}--- {file_path} ---"
+            draw.text((x_padding, current_y), file_header_text, font=file_header_font, fill=header_color)
+            text_height = file_header_font.getbbox(file_header_text)[3] - file_header_font.getbbox(file_header_text)[1]
+            current_y += text_height + line_spacing
+            
+            # Draw file content with line highlighting
+            lines = content.splitlines()
+            for line_num, line in enumerate(lines):
+                if current_y > self.height - y_padding - 15:
+                    draw.text((x_padding, current_y), "...", font=code_font, fill=self.text_color)
+                    return
+                
+                line_status = file_line_changes.get(line_num)
+                
+                # Draw background highlight for changed lines
+                if line_status == 'added':
+                    text_bbox = code_font.getbbox(line) if line else (0, 0, 10, 15)
+                    draw.rectangle(
+                        [(x_padding + 5, current_y - 2), 
+                         (self.width - x_padding, current_y + text_bbox[3] - text_bbox[1] + 2)],
+                        fill=added_bg
+                    )
+                    line_color = added_text
+                elif line_status == 'modified':
+                    text_bbox = code_font.getbbox(line) if line else (0, 0, 10, 15)
+                    draw.rectangle(
+                        [(x_padding + 5, current_y - 2),
+                         (self.width - x_padding, current_y + text_bbox[3] - text_bbox[1] + 2)],
+                        fill=modified_bg
+                    )
+                    line_color = modified_text
+                else:
+                    line_color = self.text_color
+                
+                draw.text((x_padding + 10, current_y), line, font=code_font, fill=line_color)
+                text_height = code_font.getbbox(line)[3] - code_font.getbbox(line)[1] if line else 15
+                current_y += text_height + (line_spacing // 2)
+            
+            current_y += y_padding
+
+
     def _render_commit_info(self, draw, commit_info, x_padding, y_padding, line_spacing):
         """Renders the header part of the frame with commit information."""
         current_y = y_padding

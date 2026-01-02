@@ -104,6 +104,7 @@ You can customize the output by using the following command-line options:
 | `--redact-pattern` | Custom regex pattern for redaction (repeatable). | None |
 | `--workers` | Number of parallel workers for frame rendering. | CPU count |
 | `--compare` | Compare with another branch side-by-side. | None |
+| `--show-diff` | Highlight code changes between commits. | `False` |
 
 ### Path Filtering Examples
 
@@ -143,6 +144,7 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Semantic Diffing**: Highlight code changes with `--show-diff`
 - **Branch Comparison**: Side-by-side visualization with `--compare BRANCH`
 - **Parallel Processing**: Multi-core frame rendering with `--workers`
 - **Sensitive Data Redaction**: Auto-detect and redact secrets with `--redact-secrets`

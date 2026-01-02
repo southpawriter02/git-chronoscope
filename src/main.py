@@ -10,6 +10,7 @@ from src.video_encoder import VideoEncoder
 from src.cache import FrameCache
 from src.timeline_generator import TimelineGenerator
 from src.redactor import SecretRedactor
+from src.diff_utils import DiffCalculator
 
 try:
     from tqdm import tqdm
@@ -199,6 +200,11 @@ def main():
         metavar="BRANCH",
         default=None,
         help="Compare the main branch with another branch side-by-side."
+    )
+    parser.add_argument(
+        "--show-diff",
+        action="store_true",
+        help="Highlight code changes between commits (green=added, yellow=modified)."
     )
 
     args = parser.parse_args()
@@ -565,6 +571,10 @@ def main():
             # Sequential rendering (original approach)
             print(f"Rendering {len(history)} frames sequentially...")
             
+            # Initialize diff calculator if needed
+            diff_calculator = DiffCalculator() if args.show_diff else None
+            prev_file_contents = None
+            
             if HAS_TQDM:
                 commit_iterator = tqdm(enumerate(history), total=len(history), desc="Rendering frames", unit="frame")
             else:
@@ -576,9 +586,9 @@ def main():
                 
                 frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
                 
-                # Try to get from cache
+                # Try to get from cache (only when not using diff mode)
                 cached_frame = None
-                if frame_cache:
+                if frame_cache and not args.show_diff:
                     cached_frame = frame_cache.get(commit['hash'], cache_config)
                 
                 if cached_frame:
@@ -599,10 +609,30 @@ def main():
                     if author_colors:
                         frame_renderer.set_author_color(author_colors.get(commit['author_name']))
                     
-                    frame = frame_renderer.render_frame(commit, file_contents)
+                    # Use diff rendering if enabled
+                    if args.show_diff and diff_calculator:
+                        # Calculate diffs from previous state
+                        tree_diff = diff_calculator.compute_tree_diff(
+                            prev_file_contents or {}, file_contents
+                        )
+                        
+                        # Calculate line-level changes for modified/added files
+                        line_changes = {}
+                        for fpath, status in tree_diff.items():
+                            if status in ('added', 'modified') and fpath in file_contents:
+                                old_content = prev_file_contents.get(fpath) if prev_file_contents else None
+                                line_changes[fpath] = diff_calculator.get_changed_lines(
+                                    old_content, file_contents[fpath]
+                                )
+                        
+                        frame = frame_renderer.render_diff_frame(commit, file_contents, tree_diff, line_changes)
+                        prev_file_contents = file_contents.copy()
+                    else:
+                        frame = frame_renderer.render_frame(commit, file_contents)
+                    
                     frame.save(frame_path)
                     
-                    if frame_cache:
+                    if frame_cache and not args.show_diff:
                         frame_cache.put(commit['hash'], cache_config, frame)
                 
                 frame_paths.append(frame_path)
