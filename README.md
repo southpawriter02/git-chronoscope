@@ -19,7 +19,7 @@ A command-line tool and web-based GUI that generates a video or animated GIF sho
 - Git
 - FFmpeg
 
-Before you begin, ensure you have [FFmpeg](https://ffmpeg.org/download.html) installed and accessible in your system's PATH. FFmpeg is required for video encoding.
+Before you begin, ensure you have [FFmpeg](https://ffmpeg.org/download.html) installed and accessible in your system's PATH. FFmpeg is required for video encoding. See [DEPENDENCIES.md](DEPENDENCIES.md) for detailed installation guides.
 
 ### Steps
 
