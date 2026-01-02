@@ -93,6 +93,26 @@
                     </div>
                 </div>
 
+                <!-- Path Filtering Section -->
+                <div class="form-group path-filtering">
+                    <h3>🔍 Path Filtering</h3>
+                    <small>Filter the time-lapse to specific files or directories using glob patterns (one per line)</small>
+                    
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group">
+                            <label for="include-patterns">Include Patterns</label>
+                            <textarea id="include-patterns" rows="3" placeholder="*.py&#10;src/*&#10;*.js"></textarea>
+                            <small>Only include files matching these patterns</small>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="exclude-patterns">Exclude Patterns</label>
+                            <textarea id="exclude-patterns" rows="3" placeholder="tests/*&#10;*.log&#10;node_modules/*"></textarea>
+                            <small>Exclude files matching these patterns</small>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label class="checkbox-label">
                         <input type="checkbox" id="no-email">

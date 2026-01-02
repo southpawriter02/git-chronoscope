@@ -86,6 +86,24 @@ def generate_timelapse_worker(job):
             if not history:
                 raise ValueError("No commits found in the specified branch.")
             
+            # Apply path filtering
+            include_patterns = job.options.get('include_patterns')
+            exclude_patterns = job.options.get('exclude_patterns')
+            
+            if include_patterns or exclude_patterns:
+                job.message = 'Filtering commits by path patterns...'
+                original_count = len(history)
+                history = [
+                    commit for commit in history
+                    if git_repo.commit_affects_filtered_paths(
+                        commit['commit_obj'],
+                        include_patterns=include_patterns,
+                        exclude_patterns=exclude_patterns
+                    )
+                ]
+                if not history:
+                    raise ValueError("No commits found matching the path filter criteria.")
+            
             job.message = f'Found {len(history)} commits. Rendering frames...'
             job.progress = 10
             
@@ -93,6 +111,15 @@ def generate_timelapse_worker(job):
             frame_paths = []
             for i, commit in enumerate(history):
                 file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+                
+                # Apply path filtering to file tree
+                if include_patterns or exclude_patterns:
+                    file_contents = git_repo.filter_file_tree(
+                        file_contents,
+                        include_patterns=include_patterns,
+                        exclude_patterns=exclude_patterns
+                    )
+                
                 frame = frame_renderer.render_frame(commit, file_contents)
                 
                 frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
@@ -192,7 +219,9 @@ def generate():
             'bg_color': data.get('bg_color', '#141618'),
             'text_color': data.get('text_color', '#FFFFFF'),
             'font_size': int(data.get('font_size', 15)),
-            'no_email': data.get('no_email', False)
+            'no_email': data.get('no_email', False),
+            'include_patterns': data.get('include_patterns'),
+            'exclude_patterns': data.get('exclude_patterns')
         }
         
         job = TimelapseJob(job_id, repo_path, options)
@@ -256,6 +285,17 @@ def preview():
         latest_commit = history[-1]
 
         file_contents = git_repo.get_file_tree_at_commit(latest_commit['commit_obj'])
+        
+        # Apply path filtering to preview
+        include_patterns = data.get('include_patterns')
+        exclude_patterns = data.get('exclude_patterns')
+        if include_patterns or exclude_patterns:
+            file_contents = git_repo.filter_file_tree(
+                file_contents,
+                include_patterns=include_patterns,
+                exclude_patterns=exclude_patterns
+            )
+        
         frame = frame_renderer.render_frame(latest_commit, file_contents)
 
         # Convert to base64

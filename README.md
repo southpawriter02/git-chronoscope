@@ -93,9 +93,30 @@ You can customize the output by using the following command-line options:
 | `--font-path` | Path to a `.ttf` font file. | Pillow's default font |
 | `--font-size` | Font size for the text. | `15` |
 | `--no-email` | Do not display author emails in the video. | `False` |
+| `--include` | Glob pattern for files to include (can be used multiple times). | All files |
+| `--exclude` | Glob pattern for files to exclude (can be used multiple times). | None |
+
+### Path Filtering Examples
+
+Focus on specific files or directories:
+
+```bash
+# Only include Python files
+python -m src.main /path/to/repo output.mp4 --include "*.py"
+
+# Only include files in the src directory
+python -m src.main /path/to/repo output.mp4 --include "src/*"
+
+# Exclude test files and logs
+python -m src.main /path/to/repo output.mp4 --exclude "tests/*" --exclude "*.log"
+
+# Combine include and exclude patterns
+python -m src.main /path/to/repo output.mp4 --include "*.py" --exclude "*test*"
+```
 
 ## What's New in This Version 🎉
 
+- **Path Filtering**: Focus on specific files/directories using `--include` and `--exclude` glob patterns
 - **Web-based GUI**: User-friendly interface for generating time-lapses without command-line knowledge
 - **Progress Bars**: Visual feedback during CLI generation with tqdm
 - **Better Documentation**: Comprehensive guides for both beginners and power users

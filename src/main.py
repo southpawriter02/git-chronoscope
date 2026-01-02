@@ -71,6 +71,20 @@ def main():
         action="store_true",
         help="Do not display author emails in the video."
     )
+    parser.add_argument(
+        "--include",
+        action="append",
+        default=None,
+        metavar="PATTERN",
+        help="Glob pattern for files to include (can be specified multiple times). Example: '*.py' or 'src/*'"
+    )
+    parser.add_argument(
+        "--exclude",
+        action="append",
+        default=None,
+        metavar="PATTERN",
+        help="Glob pattern for files to exclude (can be specified multiple times). Example: 'tests/*' or '*.log'"
+    )
 
     args = parser.parse_args()
 
@@ -106,10 +120,35 @@ def main():
             print("No commits found in the specified branch. Exiting.")
             return
 
-        print(f"Found {len(history)} commits. Starting frame rendering...")
+        # --- 3. Filter commits based on path patterns ---
+        include_patterns = args.include
+        exclude_patterns = args.exclude
+        
+        if include_patterns or exclude_patterns:
+            print(f"Applying path filters - Include: {include_patterns or 'all'}, Exclude: {exclude_patterns or 'none'}")
+            # Filter history to only include commits that affect filtered paths
+            filtered_history = [
+                commit for commit in history
+                if git_repo.commit_affects_filtered_paths(
+                    commit['commit_obj'],
+                    include_patterns=include_patterns,
+                    exclude_patterns=exclude_patterns
+                )
+            ]
+            skipped = len(history) - len(filtered_history)
+            if skipped > 0:
+                print(f"Skipped {skipped} commits that don't affect filtered paths.")
+            history = filtered_history
 
-        # --- 3. Render frames for each commit ---
+        if not history:
+            print("No commits found matching the filter criteria. Exiting.")
+            return
+
+        print(f"Processing {len(history)} commits. Starting frame rendering...")
+
+        # --- 4. Render frames for each commit ---
         frame_paths = []
+        frame_index = 0
         
         # Use tqdm if available, otherwise simple progress
         if HAS_TQDM:
@@ -123,11 +162,21 @@ def main():
                 print(f"{progress} Rendering frame for commit {commit['hash']}...")
 
             file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+            
+            # Apply path filtering to file tree
+            if include_patterns or exclude_patterns:
+                file_contents = git_repo.filter_file_tree(
+                    file_contents,
+                    include_patterns=include_patterns,
+                    exclude_patterns=exclude_patterns
+                )
+            
             frame = frame_renderer.render_frame(commit, file_contents)
 
-            frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
+            frame_path = os.path.join(temp_dir, f"frame_{frame_index:05d}.png")
             frame.save(frame_path)
             frame_paths.append(frame_path)
+            frame_index += 1
 
         # --- 4. Encode video from frames ---
         print("All frames rendered. Starting video encoding...")

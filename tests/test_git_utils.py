@@ -75,5 +75,104 @@ class TestGitRepo(unittest.TestCase):
         file_tree2 = git_repo.get_file_tree_at_commit(commit2)
         self.assertEqual(file_tree2, {'file_0.txt': 'This is file 0', 'file_1.txt': 'This is file 1', 'file_2.txt': 'This is file 2'})
 
+    def test_filter_file_tree_include_pattern(self):
+        """Test filtering file tree with include patterns."""
+        git_repo = GitRepo(self.test_dir)
+        
+        # Create a mock file tree
+        file_tree = {
+            'src/main.py': 'python code',
+            'src/utils.py': 'utils code',
+            'tests/test_main.py': 'test code',
+            'README.md': 'readme',
+            'config.json': 'config'
+        }
+        
+        # Test include *.py - should keep all .py files
+        result = git_repo.filter_file_tree(file_tree, include_patterns=['*.py'])
+        self.assertEqual(set(result.keys()), {'src/main.py', 'src/utils.py', 'tests/test_main.py'})
+        
+        # Test include src/* - should keep only files in src
+        result = git_repo.filter_file_tree(file_tree, include_patterns=['src/*'])
+        self.assertEqual(set(result.keys()), {'src/main.py', 'src/utils.py'})
+
+    def test_filter_file_tree_exclude_pattern(self):
+        """Test filtering file tree with exclude patterns."""
+        git_repo = GitRepo(self.test_dir)
+        
+        file_tree = {
+            'src/main.py': 'python code',
+            'src/utils.py': 'utils code',
+            'tests/test_main.py': 'test code',
+            'README.md': 'readme',
+            'debug.log': 'log content'
+        }
+        
+        # Test exclude *.log
+        result = git_repo.filter_file_tree(file_tree, exclude_patterns=['*.log'])
+        self.assertNotIn('debug.log', result)
+        self.assertEqual(len(result), 4)
+        
+        # Test exclude tests/*
+        result = git_repo.filter_file_tree(file_tree, exclude_patterns=['tests/*'])
+        self.assertNotIn('tests/test_main.py', result)
+
+    def test_filter_file_tree_combined_patterns(self):
+        """Test filtering with both include and exclude patterns."""
+        git_repo = GitRepo(self.test_dir)
+        
+        file_tree = {
+            'src/main.py': 'code',
+            'src/debug.py': 'debug',
+            'tests/test_main.py': 'test',
+            'README.md': 'readme'
+        }
+        
+        # Include *.py but exclude debug*
+        result = git_repo.filter_file_tree(
+            file_tree,
+            include_patterns=['*.py'],
+            exclude_patterns=['*debug*']
+        )
+        self.assertEqual(set(result.keys()), {'src/main.py', 'tests/test_main.py'})
+
+    def test_get_changed_files_in_commit(self):
+        """Test getting changed files in a commit."""
+        git_repo = GitRepo(self.test_dir)
+        branch_name = git_repo.repo.active_branch.name
+        history = git_repo.get_commit_history(branch=branch_name)
+        
+        # First commit should have the initial file
+        commit0 = history[0]['commit_obj']
+        changed0 = git_repo.get_changed_files_in_commit(commit0)
+        self.assertIn('file_0.txt', changed0)
+        
+        # Second commit should have file_1.txt as changed
+        commit1 = history[1]['commit_obj']
+        changed1 = git_repo.get_changed_files_in_commit(commit1)
+        self.assertIn('file_1.txt', changed1)
+
+    def test_commit_affects_filtered_paths(self):
+        """Test checking if a commit affects filtered paths."""
+        git_repo = GitRepo(self.test_dir)
+        branch_name = git_repo.repo.active_branch.name
+        history = git_repo.get_commit_history(branch=branch_name)
+        
+        # All commits affect *.txt files
+        for commit in history:
+            affects = git_repo.commit_affects_filtered_paths(
+                commit['commit_obj'],
+                include_patterns=['*.txt']
+            )
+            self.assertTrue(affects)
+        
+        # No commits affect *.py files
+        for commit in history:
+            affects = git_repo.commit_affects_filtered_paths(
+                commit['commit_obj'],
+                include_patterns=['*.py']
+            )
+            self.assertFalse(affects)
+
 if __name__ == '__main__':
     unittest.main()
