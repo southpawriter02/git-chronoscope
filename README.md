@@ -97,6 +97,9 @@ You can customize the output by using the following command-line options:
 | `--exclude` | Glob pattern for files to exclude (can be used multiple times). | None |
 | `--dry-run` | Preview what would be generated without creating the video. | `False` |
 | `--author-colors` | Enable author highlighting with unique colors per author. | `False` |
+| `--cache-dir` | Custom directory for frame cache. | `~/.git-chronoscope/cache` |
+| `--no-cache` | Disable frame caching (always re-render). | `False` |
+| `--clear-cache` | Clear cached frames before generating. | `False` |
 
 ### Path Filtering Examples
 
@@ -136,6 +139,8 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Interactive Timeline**: Generate `--format html` for browser-based exploration
+- **Frame Caching**: Speed up regeneration by reusing cached frames for unchanged commits
 - **Dry Run Mode**: Preview generation stats with `--dry-run` before creating video
 - **Author Highlighting**: Color-code by author with `--author-colors`
 - **Path Filtering**: Focus on specific files/directories using `--include` and `--exclude` glob patterns
@@ -147,7 +152,6 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 ## Future Enhancements
 
 The project roadmap includes exciting features like:
-- Interactive timeline viewer (HTML/JavaScript based)
 - VS Code extension
 - GitHub Actions integration
 - Path filtering and branch comparison

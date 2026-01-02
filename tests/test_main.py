@@ -4,7 +4,7 @@ from src import main
 
 class TestMainCli(unittest.TestCase):
 
-    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--fps', '5'])
+    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--fps', '5', '--no-cache'])
     @patch('src.main.GitRepo')
     @patch('src.main.FrameRenderer')
     @patch('src.main.VideoEncoder')

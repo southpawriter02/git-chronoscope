@@ -5,6 +5,8 @@ import shutil
 from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
+from src.cache import FrameCache
+from src.timeline_generator import TimelineGenerator
 
 try:
     from tqdm import tqdm
@@ -25,8 +27,8 @@ def main():
     parser.add_argument(
         "--format",
         default="mp4",
-        choices=["mp4", "gif"],
-        help="Output video format. Default: mp4"
+        choices=["mp4", "gif", "html"],
+        help="Output format. 'mp4'/'gif' for video, 'html' for interactive timeline. Default: mp4"
     )
     parser.add_argument(
         "--branch",
@@ -94,6 +96,21 @@ def main():
         "--author-colors",
         action="store_true",
         help="Enable author highlighting - each author gets a unique color in the video."
+    )
+    parser.add_argument(
+        "--cache-dir",
+        default=None,
+        help="Custom directory for frame cache. Default: ~/.git-chronoscope/cache"
+    )
+    parser.add_argument(
+        "--no-cache",
+        action="store_true",
+        help="Disable frame caching (always re-render all frames)."
+    )
+    parser.add_argument(
+        "--clear-cache",
+        action="store_true",
+        help="Clear cached frames for this repository before generating."
     )
 
     args = parser.parse_args()
@@ -202,6 +219,47 @@ def main():
             print("="*60 + "\n")
             return
 
+        # --- HTML Interactive Timeline Generation ---
+        if args.format == "html":
+            print(f"Generating interactive timeline with {len(history)} commits...")
+            
+            # Collect file trees for each commit
+            file_trees = []
+            if HAS_TQDM:
+                commit_iterator = tqdm(history, desc="Extracting file trees", unit="commit")
+            else:
+                commit_iterator = history
+            
+            for commit in commit_iterator:
+                file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+                
+                # Apply path filtering
+                if include_patterns or exclude_patterns:
+                    file_contents = git_repo.filter_file_tree(
+                        file_contents,
+                        include_patterns=include_patterns,
+                        exclude_patterns=exclude_patterns
+                    )
+                
+                file_trees.append(file_contents)
+            
+            # Generate the HTML timeline
+            repo_name = os.path.basename(os.path.abspath(args.repo_path))
+            branch_name = args.branch or git_repo.repo.active_branch.name
+            
+            timeline_gen = TimelineGenerator(repo_name, branch_name)
+            timeline_gen.generate(
+                commits=history,
+                file_trees=file_trees,
+                output_path=args.output_path,
+                include_patterns=include_patterns,
+                exclude_patterns=exclude_patterns
+            )
+            
+            print(f"\nInteractive timeline generated at: {args.output_path}")
+            print("Open this file in a web browser to explore your repository history!")
+            return
+
         print(f"Processing {len(history)} commits. Starting frame rendering...")
 
         # --- Generate author colors if enabled ---
@@ -210,6 +268,29 @@ def main():
             authors = set(c['author_name'] for c in history)
             author_colors = FrameRenderer.generate_author_colors(authors)
             print(f"Author highlighting enabled for {len(authors)} authors.")
+
+        # --- Initialize cache ---
+        frame_cache = None
+        cache_config = None
+        if not args.no_cache:
+            frame_cache = FrameCache(args.repo_path, cache_dir=args.cache_dir)
+            
+            # Clear cache if requested
+            if args.clear_cache:
+                cleared = frame_cache.clear()
+                print(f"Cleared {cleared} cached frames.")
+            
+            # Create config hash for cache key (everything that affects frame appearance)
+            cache_config = {
+                'resolution': args.resolution,
+                'bg_color': args.bg_color,
+                'text_color': args.text_color,
+                'font_size': args.font_size,
+                'no_email': args.no_email,
+                'include': args.include,
+                'exclude': args.exclude,
+                'author_colors': args.author_colors
+            }
 
         # --- 4. Render frames for each commit ---
         frame_paths = []
@@ -226,29 +307,50 @@ def main():
                 progress = f"[{i+1}/{len(history)}]"
                 print(f"{progress} Rendering frame for commit {commit['hash']}...")
 
-            file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
-            
-            # Apply path filtering to file tree
-            if include_patterns or exclude_patterns:
-                file_contents = git_repo.filter_file_tree(
-                    file_contents,
-                    include_patterns=include_patterns,
-                    exclude_patterns=exclude_patterns
-                )
-            
-            # Set author color for this frame if enabled
-            if author_colors:
-                frame_renderer.set_author_color(author_colors.get(commit['author_name']))
-            
-            frame = frame_renderer.render_frame(commit, file_contents)
-
             frame_path = os.path.join(temp_dir, f"frame_{frame_index:05d}.png")
-            frame.save(frame_path)
+            
+            # Try to get from cache
+            cached_frame = None
+            if frame_cache:
+                cached_frame = frame_cache.get(commit['hash'], cache_config)
+            
+            if cached_frame:
+                # Use cached frame
+                cached_frame.save(frame_path)
+            else:
+                # Render new frame
+                file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+                
+                # Apply path filtering to file tree
+                if include_patterns or exclude_patterns:
+                    file_contents = git_repo.filter_file_tree(
+                        file_contents,
+                        include_patterns=include_patterns,
+                        exclude_patterns=exclude_patterns
+                    )
+                
+                # Set author color for this frame if enabled
+                if author_colors:
+                    frame_renderer.set_author_color(author_colors.get(commit['author_name']))
+                
+                frame = frame_renderer.render_frame(commit, file_contents)
+                frame.save(frame_path)
+                
+                # Store in cache
+                if frame_cache:
+                    frame_cache.put(commit['hash'], cache_config, frame)
+            
             frame_paths.append(frame_path)
             frame_index += 1
 
-        # --- 4. Encode video from frames ---
+        # --- 5. Encode video from frames ---
         print("All frames rendered. Starting video encoding...")
+        
+        # Print cache statistics
+        if frame_cache:
+            stats = frame_cache.get_stats()
+            print(f"Cache stats: {stats['hits']} hits, {stats['misses']} misses ({stats['hit_rate']:.1f}% hit rate)")
+        
         video_encoder = VideoEncoder(args.output_path, frame_rate=args.fps, format=args.format)
         video_encoder.create_video_from_frames(frame_paths)
 
