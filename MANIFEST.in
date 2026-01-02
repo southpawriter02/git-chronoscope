@@ -1,0 +1,24 @@
+include README.md
+include LICENSE
+include requirements.txt
+include DEPENDENCIES.md
+include SYSTEM_REQUIREMENTS.md
+include QUICKSTART.md
+include CONTRIBUTING.md
+include TROUBLESHOOTING.md
+include LIMITATIONS.md
+
+recursive-include src *.py
+recursive-include tests *.py
+
+exclude .gitignore
+exclude .github/*
+exclude Formula/*
+exclude homebrew-tap/*
+exclude vscode-extension/*
+exclude gitlab-ci/*
+exclude roadmap/*
+
+global-exclude __pycache__
+global-exclude *.py[cod]
+global-exclude .DS_Store

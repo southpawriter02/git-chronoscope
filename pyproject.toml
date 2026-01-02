@@ -1,0 +1,60 @@
+[build-system]
+requires = ["setuptools>=61.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "git-chronoscope"
+version = "1.0.0"
+description = "Generate time-lapse visualizations of Git repository evolution"
+readme = "README.md"
+license = {text = "MIT"}
+requires-python = ">=3.7"
+authors = [
+    {name = "Git Chronoscope Team", email = "chronoscope@example.com"}
+]
+keywords = ["git", "visualization", "time-lapse", "video", "history"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Intended Audience :: Developers",
+    "Topic :: Software Development :: Version Control :: Git",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Operating System :: OS Independent",
+]
+dependencies = [
+    "GitPython>=3.1.0",
+    "Pillow>=9.0.0",
+    "Pygments>=2.10.0",
+    "tqdm>=4.60.0",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=7.0.0",
+    "pytest-cov>=4.0.0",
+    "build>=0.10.0",
+    "twine>=4.0.0",
+]
+
+[project.scripts]
+git-chronoscope = "src.main:main"
+
+[project.urls]
+Homepage = "https://github.com/user/git-chronoscope"
+Documentation = "https://github.com/user/git-chronoscope#readme"
+Repository = "https://github.com/user/git-chronoscope"
+Issues = "https://github.com/user/git-chronoscope/issues"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["src*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
