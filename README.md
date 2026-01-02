@@ -111,6 +111,8 @@ You can customize the output by using the following command-line options:
 | `--until` | Only include commits before date (YYYY-MM-DD). | None |
 | `--access-control` | Enable .agentignore file access restrictions. | `False` |
 | `--strict-input` | Enable strict input validation (blocks suspicious patterns). | `False` |
+| `--no-default-blocklist` | Disable default blocklist of sensitive files. | `False` |
+| `--sandbox` | Enable filesystem sandboxing (restrict to repo dir). | `False` |
 
 ### Path Filtering Examples
 
@@ -150,6 +152,8 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Filesystem Sandboxing**: Restrict file access to repo with `--sandbox`
+- **Default Blocklists**: Sensitive files (.env, *.pem) blocked by default
 - **Input Validation**: Prompt injection defense with `--strict-input`
 - **File Access Control**: Restrict file access with `.agentignore` using `--access-control`
 - **Large Repository Handling**: Commit sampling with `--sample-rate` and date filtering

@@ -13,15 +13,51 @@ class AccessControl:
     Similar to .gitignore but for restricting agent access.
     """
     
-    def __init__(self, patterns: Optional[List[str]] = None):
+    # Built-in blocklist of sensitive files (always active unless disabled)
+    DEFAULT_BLOCKED_PATTERNS = [
+        # Environment and credentials
+        '.env', '.env.*', '.env.local', '.env.production',
+        'credentials.json', 'credentials.yml', 'credentials.yaml',
+        'secrets.json', 'secrets.yml', 'secrets.yaml',
+        
+        # SSH and certificates
+        '*.pem', '*.key', '*.p12', '*.pfx', '*.crt',
+        'id_rsa', 'id_rsa.pub', 'id_dsa', 'id_ecdsa', 'id_ed25519',
+        '.ssh/',
+        
+        # Cloud provider credentials
+        '.aws/', '.azure/', '.gcp/',
+        'aws_credentials', 'boto.cfg',
+        
+        # Package manager tokens
+        '.npmrc', '.pypirc', '.gem/credentials',
+        
+        # Other sensitive
+        '.gnupg/', '.password-store/',
+        '.netrc', '.htpasswd',
+        'kubeconfig', '.kube/config',
+    ]
+    
+    def __init__(self, patterns: Optional[List[str]] = None, use_defaults: bool = True):
         """
         Initialize access control with optional patterns.
         
         :param patterns: List of glob patterns to block.
+        :param use_defaults: If True, include default blocked patterns.
         """
         self.blocked_patterns: List[str] = patterns or []
         self.negated_patterns: List[str] = []  # Patterns that start with !
         self.denied_count = 0
+        self.using_defaults = use_defaults
+        
+        if use_defaults:
+            self.load_defaults()
+    
+    def load_defaults(self) -> None:
+        """Load the default blocked patterns."""
+        for pattern in self.DEFAULT_BLOCKED_PATTERNS:
+            if pattern not in self.blocked_patterns:
+                self.blocked_patterns.append(pattern)
     
     def load_from_file(self, filepath: str) -> bool:
         """

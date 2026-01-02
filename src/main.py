@@ -13,6 +13,7 @@ from src.redactor import SecretRedactor
 from src.diff_utils import DiffCalculator
 from src.access_control import AccessControl
 from src.input_sanitizer import InputSanitizer
+from src.sandbox import Sandbox
 
 try:
     from tqdm import tqdm
@@ -244,6 +245,16 @@ def main():
         action="store_true",
         help="Enable strict input validation (blocks suspicious patterns)."
     )
+    parser.add_argument(
+        "--no-default-blocklist",
+        action="store_true",
+        help="Disable default blocklist of sensitive files (.env, *.pem, etc.)."
+    )
+    parser.add_argument(
+        "--sandbox",
+        action="store_true",
+        help="Enable filesystem sandboxing (restrict file access to repo directory)."
+    )
 
     args = parser.parse_args()
 
@@ -304,6 +315,29 @@ def main():
                 print(f"   - {warning}")
             if len(warnings) > 5:
                 print(f"   ... and {len(warnings) - 5} more")
+
+        # --- Filesystem Sandboxing ---
+        sandbox = None
+        if args.sandbox:
+            sandbox = Sandbox(args.repo_path)
+            
+            # Validate repo path is a real directory
+            repo_valid, _ = sandbox.validate_path(args.repo_path)
+            if not repo_valid:
+                print(f"Error: Repository path validation failed")
+                for v in sandbox.get_violations():
+                    print(f"  ⚠️  {v}")
+                return
+            
+            # Validate output path
+            output_valid, _ = sandbox.validate_output_path(args.output_path)
+            if not output_valid:
+                print(f"Error: Output path validation failed")
+                for v in sandbox.get_violations():
+                    print(f"  ⚠️  {v}")
+                return
+            
+            print(f"Sandbox enabled: file access restricted to {sandbox.root_path}")
 
         frame_renderer = FrameRenderer(
             width=width,
@@ -390,15 +424,19 @@ def main():
             print(f"Secret redaction enabled with {len(redactor.patterns)} patterns.")
 
         # --- Initialize access control ---
-        access_control = None
+        # Access control with default blocklist is always active unless disabled
+        use_defaults = not args.no_default_blocklist
+        access_control = AccessControl(use_defaults=use_defaults)
+        
+        # Load additional patterns from .agentignore if --access-control is set
         if args.access_control:
-            access_control = AccessControl()
             agentignore_path = os.path.join(args.repo_path, '.agentignore')
             if access_control.load_from_file(agentignore_path):
-                stats = access_control.get_stats()
-                print(f"Access control enabled: {stats['blocked_patterns']} blocked patterns from .agentignore")
-            else:
-                print("Access control enabled but no .agentignore file found.")
+                print(f"Loaded patterns from .agentignore")
+        
+        stats = access_control.get_stats()
+        if stats['blocked_patterns'] > 0:
+            print(f"Access control: {stats['blocked_patterns']} blocked patterns (defaults: {use_defaults})")
 
         if not history:
             print("No commits found matching the filter criteria. Exiting.")
