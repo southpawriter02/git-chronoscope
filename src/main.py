@@ -2,6 +2,8 @@ import argparse
 import os
 import tempfile
 import shutil
+import multiprocessing
+from functools import partial
 from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
@@ -14,6 +16,67 @@ try:
     HAS_TQDM = True
 except ImportError:
     HAS_TQDM = False
+
+
+def render_frame_worker(args):
+    """
+    Worker function for parallel frame rendering.
+    Designed to be picklable for multiprocessing.
+    
+    :param args: Tuple of (index, commit_data, config)
+    :return: Tuple of (index, frame_path, success)
+    """
+    index, commit_data, config = args
+    
+    try:
+        # Re-initialize components in worker process
+        git_repo = GitRepo(config['repo_path'])
+        
+        renderer = FrameRenderer(
+            width=config['width'],
+            height=config['height'],
+            bg_color=config['bg_color'],
+            text_color=config['text_color'],
+            font_path=config['font_path'],
+            font_size=config['font_size'],
+            no_email=config['no_email']
+        )
+        
+        redactor = SecretRedactor(enabled=config['redact_secrets'])
+        
+        # Get commit object by hash
+        commit_obj = git_repo.repo.commit(commit_data['hash'])
+        
+        # Get file tree
+        file_contents = git_repo.get_file_tree_at_commit(commit_obj)
+        
+        # Apply path filtering
+        if config['include_patterns'] or config['exclude_patterns']:
+            file_contents = git_repo.filter_file_tree(
+                file_contents,
+                include_patterns=config['include_patterns'],
+                exclude_patterns=config['exclude_patterns']
+            )
+        
+        # Apply redaction
+        if redactor.enabled:
+            file_contents, _ = redactor.redact_file_tree(file_contents)
+        
+        # Set author color
+        if config['author_colors']:
+            author_color = config['author_colors'].get(commit_data['author_name'])
+            renderer.set_author_color(author_color)
+        
+        # Render frame
+        frame = renderer.render_frame(commit_data, file_contents)
+        
+        # Save frame
+        frame_path = config['frame_path_template'].format(index=index)
+        frame.save(frame_path)
+        
+        return (index, frame_path, True)
+    except Exception as e:
+        return (index, str(e), False)
 
 def main():
     """
@@ -124,6 +187,18 @@ def main():
         default=None,
         metavar="REGEX",
         help="Custom regex pattern for redaction (can be specified multiple times)."
+    )
+    parser.add_argument(
+        "--workers",
+        type=int,
+        default=None,
+        help="Number of parallel workers for frame rendering. Default: number of CPU cores."
+    )
+    parser.add_argument(
+        "--compare",
+        metavar="BRANCH",
+        default=None,
+        help="Compare the main branch with another branch side-by-side."
     )
 
     args = parser.parse_args()
@@ -240,6 +315,107 @@ def main():
             print("="*60 + "\n")
             return
 
+        # --- Branch Comparison Mode ---
+        if args.compare:
+            left_branch = args.branch or git_repo.repo.active_branch.name
+            right_branch = args.compare
+            
+            print(f"Comparing branches: '{left_branch}' vs '{right_branch}'")
+            
+            # Get history for both branches
+            left_history = git_repo.get_commit_history(branch=left_branch)
+            right_history = git_repo.get_commit_history(branch=right_branch)
+            
+            if not left_history:
+                print(f"No commits found in branch '{left_branch}'. Exiting.")
+                return
+            if not right_history:
+                print(f"No commits found in branch '{right_branch}'. Exiting.")
+                return
+            
+            print(f"Left branch ({left_branch}): {len(left_history)} commits")
+            print(f"Right branch ({right_branch}): {len(right_history)} commits")
+            
+            # Align commits by timestamp - create unified timeline
+            all_timestamps = set()
+            for c in left_history:
+                all_timestamps.add(c['date'])
+            for c in right_history:
+                all_timestamps.add(c['date'])
+            
+            sorted_timestamps = sorted(all_timestamps)
+            
+            # Create lookup by timestamp for each branch
+            left_by_time = {}
+            right_by_time = {}
+            
+            # Fill in the latest commit at or before each timestamp
+            left_current = None
+            for c in sorted(left_history, key=lambda x: x['date']):
+                left_by_time[c['date']] = c
+                left_current = c
+            
+            right_current = None
+            for c in sorted(right_history, key=lambda x: x['date']):
+                right_by_time[c['date']] = c
+                right_current = c
+            
+            # Generate frames for comparison
+            frame_paths = []
+            print(f"Rendering {len(sorted_timestamps)} comparison frames...")
+            
+            if HAS_TQDM:
+                timestamp_iterator = tqdm(enumerate(sorted_timestamps), total=len(sorted_timestamps), desc="Rendering comparison", unit="frame")
+            else:
+                timestamp_iterator = enumerate(sorted_timestamps)
+            
+            # Track current state for each branch
+            left_state = None
+            right_state = None
+            
+            for i, ts in timestamp_iterator:
+                # Update state if there's a commit at this timestamp
+                if ts in left_by_time:
+                    left_state = left_by_time[ts]
+                if ts in right_by_time:
+                    right_state = right_by_time[ts]
+                
+                # Get file trees
+                left_files = {}
+                right_files = {}
+                
+                if left_state:
+                    left_files = git_repo.get_file_tree_at_commit(left_state['commit_obj'])
+                    if include_patterns or exclude_patterns:
+                        left_files = git_repo.filter_file_tree(left_files, include_patterns, exclude_patterns)
+                    if redactor.enabled:
+                        left_files, _ = redactor.redact_file_tree(left_files)
+                
+                if right_state:
+                    right_files = git_repo.get_file_tree_at_commit(right_state['commit_obj'])
+                    if include_patterns or exclude_patterns:
+                        right_files = git_repo.filter_file_tree(right_files, include_patterns, exclude_patterns)
+                    if redactor.enabled:
+                        right_files, _ = redactor.redact_file_tree(right_files)
+                
+                # Render comparison frame
+                frame = frame_renderer.render_comparison_frame(
+                    left_state, right_state,
+                    left_files, right_files,
+                    left_branch, right_branch
+                )
+                
+                frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
+                frame.save(frame_path)
+                frame_paths.append(frame_path)
+            
+            # Encode video
+            print("All comparison frames rendered. Starting video encoding...")
+            video_encoder = VideoEncoder(args.output_path, frame_rate=args.fps, format=args.format)
+            video_encoder.create_video_from_frames(frame_paths)
+            print(f"\nBranch comparison video generated at: {args.output_path}")
+            return
+
         # --- HTML Interactive Timeline Generation ---
         if args.format == "html":
             print(f"Generating interactive timeline with {len(history)} commits...")
@@ -318,59 +494,118 @@ def main():
             }
 
         # --- 4. Render frames for each commit ---
+        num_workers = args.workers or multiprocessing.cpu_count()
         frame_paths = []
-        frame_index = 0
         
-        # Use tqdm if available, otherwise simple progress
-        if HAS_TQDM:
-            commit_iterator = tqdm(enumerate(history), total=len(history), desc="Rendering frames", unit="frame")
+        # Prepare serializable commit data (remove non-picklable commit_obj)
+        serializable_history = []
+        for commit in history:
+            serializable_commit = {
+                'hash': commit.get('hash', ''),
+                'author_name': commit.get('author_name', 'Unknown'),
+                'author_email': commit.get('author_email', ''),
+                'date': commit.get('date', None),
+                'message': commit.get('message', '')
+            }
+            serializable_history.append(serializable_commit)
+        
+        # Worker config (all serializable data)
+        resolutions = {
+            "720p": (1280, 720),
+            "1080p": (1920, 1080),
+            "4k": (3840, 2160)
+        }
+        w, h = resolutions[args.resolution]
+        
+        worker_config = {
+            'repo_path': args.repo_path,
+            'width': w,
+            'height': h,
+            'bg_color': args.bg_color,
+            'text_color': args.text_color,
+            'font_path': args.font_path,
+            'font_size': args.font_size,
+            'no_email': args.no_email,
+            'include_patterns': include_patterns,
+            'exclude_patterns': exclude_patterns,
+            'redact_secrets': redactor.enabled,
+            'author_colors': author_colors,
+            'frame_path_template': os.path.join(temp_dir, "frame_{index:05d}.png")
+        }
+        
+        # Prepare work items
+        work_items = [(i, serializable_history[i], worker_config) for i in range(len(serializable_history))]
+        
+        if num_workers > 1:
+            # Parallel rendering
+            print(f"Rendering {len(history)} frames using {num_workers} parallel workers...")
+            
+            with multiprocessing.Pool(processes=num_workers) as pool:
+                if HAS_TQDM:
+                    results = list(tqdm(
+                        pool.imap(render_frame_worker, work_items),
+                        total=len(work_items),
+                        desc="Rendering frames",
+                        unit="frame"
+                    ))
+                else:
+                    results = []
+                    for i, result in enumerate(pool.imap(render_frame_worker, work_items)):
+                        print(f"[{i+1}/{len(work_items)}] Rendered frame {i}")
+                        results.append(result)
+            
+            # Sort results by index and collect paths
+            results.sort(key=lambda x: x[0])
+            for idx, path, success in results:
+                if success:
+                    frame_paths.append(path)
+                else:
+                    print(f"Warning: Failed to render frame {idx}: {path}")
         else:
-            commit_iterator = enumerate(history)
-        
-        for i, commit in commit_iterator:
-            if not HAS_TQDM:
-                progress = f"[{i+1}/{len(history)}]"
-                print(f"{progress} Rendering frame for commit {commit['hash']}...")
-
-            frame_path = os.path.join(temp_dir, f"frame_{frame_index:05d}.png")
+            # Sequential rendering (original approach)
+            print(f"Rendering {len(history)} frames sequentially...")
             
-            # Try to get from cache
-            cached_frame = None
-            if frame_cache:
-                cached_frame = frame_cache.get(commit['hash'], cache_config)
-            
-            if cached_frame:
-                # Use cached frame
-                cached_frame.save(frame_path)
+            if HAS_TQDM:
+                commit_iterator = tqdm(enumerate(history), total=len(history), desc="Rendering frames", unit="frame")
             else:
-                # Render new frame
-                file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
-                
-                # Apply path filtering to file tree
-                if include_patterns or exclude_patterns:
-                    file_contents = git_repo.filter_file_tree(
-                        file_contents,
-                        include_patterns=include_patterns,
-                        exclude_patterns=exclude_patterns
-                    )
-                
-                # Apply secret redaction
-                if redactor.enabled:
-                    file_contents, _ = redactor.redact_file_tree(file_contents)
-                
-                # Set author color for this frame if enabled
-                if author_colors:
-                    frame_renderer.set_author_color(author_colors.get(commit['author_name']))
-                
-                frame = frame_renderer.render_frame(commit, file_contents)
-                frame.save(frame_path)
-                
-                # Store in cache
-                if frame_cache:
-                    frame_cache.put(commit['hash'], cache_config, frame)
+                commit_iterator = enumerate(history)
             
-            frame_paths.append(frame_path)
-            frame_index += 1
+            for i, commit in commit_iterator:
+                if not HAS_TQDM:
+                    print(f"[{i+1}/{len(history)}] Rendering frame for commit {commit['hash']}...")
+                
+                frame_path = os.path.join(temp_dir, f"frame_{i:05d}.png")
+                
+                # Try to get from cache
+                cached_frame = None
+                if frame_cache:
+                    cached_frame = frame_cache.get(commit['hash'], cache_config)
+                
+                if cached_frame:
+                    cached_frame.save(frame_path)
+                else:
+                    file_contents = git_repo.get_file_tree_at_commit(commit['commit_obj'])
+                    
+                    if include_patterns or exclude_patterns:
+                        file_contents = git_repo.filter_file_tree(
+                            file_contents,
+                            include_patterns=include_patterns,
+                            exclude_patterns=exclude_patterns
+                        )
+                    
+                    if redactor.enabled:
+                        file_contents, _ = redactor.redact_file_tree(file_contents)
+                    
+                    if author_colors:
+                        frame_renderer.set_author_color(author_colors.get(commit['author_name']))
+                    
+                    frame = frame_renderer.render_frame(commit, file_contents)
+                    frame.save(frame_path)
+                    
+                    if frame_cache:
+                        frame_cache.put(commit['hash'], cache_config, frame)
+                
+                frame_paths.append(frame_path)
 
         # --- 5. Encode video from frames ---
         print("All frames rendered. Starting video encoding...")

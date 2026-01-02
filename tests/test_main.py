@@ -4,7 +4,7 @@ from src import main
 
 class TestMainCli(unittest.TestCase):
 
-    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--fps', '5', '--no-cache'])
+    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--fps', '5', '--no-cache', '--workers', '1'])
     @patch('src.main.GitRepo')
     @patch('src.main.FrameRenderer')
     @patch('src.main.VideoEncoder')
@@ -73,7 +73,7 @@ class TestMainCli(unittest.TestCase):
 
         mock_rmtree.assert_called_once_with('fake_temp_dir')
 
-    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--no-email'])
+    @patch('sys.argv', ['src/main.py', 'fake_repo', 'output.mp4', '--no-email', '--workers', '1'])
     @patch('src.main.GitRepo')
     @patch('src.main.FrameRenderer')
     @patch('src.main.VideoEncoder')

@@ -102,6 +102,8 @@ You can customize the output by using the following command-line options:
 | `--clear-cache` | Clear cached frames before generating. | `False` |
 | `--redact-secrets` | Auto-detect and redact sensitive data. | `False` |
 | `--redact-pattern` | Custom regex pattern for redaction (repeatable). | None |
+| `--workers` | Number of parallel workers for frame rendering. | CPU count |
+| `--compare` | Compare with another branch side-by-side. | None |
 
 ### Path Filtering Examples
 
@@ -141,6 +143,8 @@ python -m src.main /path/to/repo output.mp4 --author-colors
 
 ## What's New in This Version 🎉
 
+- **Branch Comparison**: Side-by-side visualization with `--compare BRANCH`
+- **Parallel Processing**: Multi-core frame rendering with `--workers`
 - **Sensitive Data Redaction**: Auto-detect and redact secrets with `--redact-secrets`
 - **Interactive Timeline**: Generate `--format html` for browser-based exploration
 - **Frame Caching**: Speed up regeneration by reusing cached frames for unchanged commits

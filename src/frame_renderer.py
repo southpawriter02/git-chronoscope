@@ -171,3 +171,120 @@ class FrameRenderer:
                 current_y += text_height + (line_spacing // 2)
 
             current_y += y_padding # Space between files
+
+    def render_comparison_frame(self, left_commit, right_commit, left_files, right_files, left_branch="left", right_branch="right"):
+        """
+        Renders a side-by-side comparison frame for two branches.
+        
+        :param left_commit: Dictionary with commit info for left branch (can be None).
+        :param right_commit: Dictionary with commit info for right branch (can be None).
+        :param left_files: Dictionary of file contents for left branch.
+        :param right_files: Dictionary of file contents for right branch.
+        :param left_branch: Name of the left branch.
+        :param right_branch: Name of the right branch.
+        :return: A Pillow Image object.
+        """
+        img = Image.new('RGB', (self.width, self.height), color=self.bg_color)
+        draw = ImageDraw.Draw(img)
+        
+        x_padding = 20
+        y_padding = 15
+        line_spacing = 6
+        
+        # Calculate split point
+        mid_x = self.width // 2
+        separator_width = 2
+        
+        # Draw vertical separator
+        separator_color = (100, 100, 100)
+        draw.line([(mid_x, 0), (mid_x, self.height)], fill=separator_color, width=separator_width)
+        
+        # Render left side
+        self._render_comparison_side(
+            draw, left_commit, left_files, left_branch,
+            x_start=0, x_end=mid_x - separator_width,
+            x_padding=x_padding, y_padding=y_padding, line_spacing=line_spacing
+        )
+        
+        # Render right side
+        self._render_comparison_side(
+            draw, right_commit, right_files, right_branch,
+            x_start=mid_x + separator_width, x_end=self.width,
+            x_padding=x_padding, y_padding=y_padding, line_spacing=line_spacing
+        )
+        
+        return img
+    
+    def _render_comparison_side(self, draw, commit_info, file_contents, branch_name, x_start, x_end, x_padding, y_padding, line_spacing):
+        """Render one side of the comparison frame."""
+        current_y = y_padding
+        side_width = x_end - x_start
+        x_offset = x_start + x_padding
+        
+        # Branch header with distinct color
+        branch_color = (100, 255, 218)  # Cyan/teal color
+        branch_text = f"Branch: {branch_name}"
+        draw.text((x_offset, current_y), branch_text, font=self.font_header, fill=branch_color)
+        text_height = self.font_header.getbbox(branch_text)[3] - self.font_header.getbbox(branch_text)[1]
+        current_y += text_height + line_spacing
+        
+        # Horizontal separator under branch name
+        draw.line([(x_start + 5, current_y), (x_end - 5, current_y)], fill=(60, 60, 60), width=1)
+        current_y += y_padding
+        
+        if commit_info is None:
+            # No commit at this point in time
+            no_commit_text = "(no commit at this time)"
+            draw.text((x_offset, current_y), no_commit_text, font=self.font, fill=(128, 128, 128))
+            return
+        
+        # Commit hash
+        hash_text = f"Commit: {commit_info.get('hash', 'unknown')[:7]}"
+        draw.text((x_offset, current_y), hash_text, font=self.font, fill=self.text_color)
+        text_height = self.font.getbbox(hash_text)[3] - self.font.getbbox(hash_text)[1]
+        current_y += text_height + line_spacing
+        
+        # Author
+        author_text = f"Author: {commit_info.get('author_name', 'Unknown')}"
+        draw.text((x_offset, current_y), author_text, font=self.font, fill=self.text_color)
+        text_height = self.font.getbbox(author_text)[3] - self.font.getbbox(author_text)[1]
+        current_y += text_height + line_spacing
+        
+        # Date
+        date = commit_info.get('date')
+        if date:
+            date_str = date.strftime('%Y-%m-%d %H:%M') if hasattr(date, 'strftime') else str(date)
+            date_text = f"Date: {date_str}"
+            draw.text((x_offset, current_y), date_text, font=self.font, fill=self.text_color)
+            text_height = self.font.getbbox(date_text)[3] - self.font.getbbox(date_text)[1]
+            current_y += text_height + line_spacing
+        
+        # Message (first line only)
+        message = commit_info.get('message', '')
+        if message:
+            msg_text = message.splitlines()[0][:40] + ("..." if len(message.splitlines()[0]) > 40 else "")
+            draw.text((x_offset, current_y), msg_text, font=self.font, fill=(180, 180, 180))
+            text_height = self.font.getbbox(msg_text)[3] - self.font.getbbox(msg_text)[1]
+            current_y += text_height + y_padding
+        
+        # File list header
+        files_header = f"Files ({len(file_contents)}):"
+        draw.text((x_offset, current_y), files_header, font=self.font, fill=branch_color)
+        text_height = self.font.getbbox(files_header)[3] - self.font.getbbox(files_header)[1]
+        current_y += text_height + line_spacing
+        
+        # File list
+        sorted_files = sorted(file_contents.keys())
+        max_files = 20  # Limit files shown
+        
+        for i, file_path in enumerate(sorted_files[:max_files]):
+            if current_y > self.height - y_padding - 30:
+                remaining = len(sorted_files) - i
+                draw.text((x_offset, current_y), f"... and {remaining} more files", font=self.font, fill=(128, 128, 128))
+                break
+            
+            # Truncate long file paths
+            display_path = file_path if len(file_path) < 35 else "..." + file_path[-32:]
+            draw.text((x_offset + 10, current_y), f"📄 {display_path}", font=self.font, fill=self.text_color)
+            text_height = self.font.getbbox(file_path)[3] - self.font.getbbox(file_path)[1]
+            current_y += text_height + (line_spacing // 2)
