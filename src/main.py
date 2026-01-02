@@ -206,6 +206,32 @@ def main():
         action="store_true",
         help="Highlight code changes between commits (green=added, yellow=modified)."
     )
+    parser.add_argument(
+        "--sample-rate",
+        type=int,
+        default=1,
+        metavar="N",
+        help="Process every Nth commit (default: 1 = all commits)."
+    )
+    parser.add_argument(
+        "--max-commits",
+        type=int,
+        default=None,
+        metavar="N",
+        help="Limit to N most recent commits."
+    )
+    parser.add_argument(
+        "--since",
+        default=None,
+        metavar="DATE",
+        help="Only include commits after this date (YYYY-MM-DD)."
+    )
+    parser.add_argument(
+        "--until",
+        default=None,
+        metavar="DATE",
+        help="Only include commits before this date (YYYY-MM-DD)."
+    )
 
     args = parser.parse_args()
 
@@ -260,6 +286,43 @@ def main():
             if skipped > 0:
                 print(f"Skipped {skipped} commits that don't affect filtered paths.")
             history = filtered_history
+
+        # --- Large repository handling ---
+        original_count = len(history)
+        
+        # Date filtering
+        if args.since or args.until:
+            from datetime import datetime
+            filtered = []
+            for commit in history:
+                commit_date = commit.get('date')
+                if commit_date:
+                    if args.since:
+                        since_date = datetime.strptime(args.since, '%Y-%m-%d')
+                        if commit_date.replace(tzinfo=None) < since_date:
+                            continue
+                    if args.until:
+                        until_date = datetime.strptime(args.until, '%Y-%m-%d')
+                        if commit_date.replace(tzinfo=None) > until_date:
+                            continue
+                filtered.append(commit)
+            print(f"Date filter ({args.since or 'start'} to {args.until or 'now'}): {len(history)} → {len(filtered)} commits")
+            history = filtered
+        
+        # Max commits limit
+        if args.max_commits and len(history) > args.max_commits:
+            print(f"Limiting to {args.max_commits} most recent commits (from {len(history)})")
+            history = history[:args.max_commits]
+        
+        # Commit sampling
+        if args.sample_rate > 1:
+            sampled = history[::args.sample_rate]
+            print(f"Sampling every {args.sample_rate} commits: {len(history)} → {len(sampled)} commits")
+            history = sampled
+        
+        # Large repo warning
+        if len(history) > 1000:
+            print(f"⚠️  Warning: Processing {len(history)} commits. Consider using --sample-rate or --max-commits for faster generation.")
 
         # --- Initialize secret redactor ---
         redactor = SecretRedactor(enabled=args.redact_secrets or args.redact_pattern)
