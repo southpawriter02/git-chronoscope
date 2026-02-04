@@ -357,18 +357,36 @@ async function loadJobHistory() {
                 actionHtml = `<a href="/api/download/${job.id}" class="btn btn-success btn-sm">Download</a>`;
             }
 
-            item.innerHTML = `
-                <div class="job-info">
-                    <div class="job-repo">${job.repo_path}</div>
-                    <div class="job-meta">
-                        ${date} • ${job.format.toUpperCase()}
-                        <span class="job-status ${statusClass}">${job.status}</span>
-                    </div>
-                </div>
-                <div class="job-actions">
-                    ${actionHtml}
-                </div>
-            `;
+            // Secure rendering to prevent XSS
+            const jobInfo = document.createElement('div');
+            jobInfo.className = 'job-info';
+
+            const jobRepo = document.createElement('div');
+            jobRepo.className = 'job-repo';
+            jobRepo.textContent = job.repo_path; // Safe against XSS
+
+            const jobMeta = document.createElement('div');
+            jobMeta.className = 'job-meta';
+
+            // Create status span
+            const statusSpan = document.createElement('span');
+            statusSpan.className = `job-status ${statusClass}`;
+            statusSpan.textContent = job.status;
+
+            // Combine text and span
+            const metaText = document.createTextNode(`${date} • ${job.format.toUpperCase()} `);
+            jobMeta.appendChild(metaText);
+            jobMeta.appendChild(statusSpan);
+
+            jobInfo.appendChild(jobRepo);
+            jobInfo.appendChild(jobMeta);
+
+            const jobActions = document.createElement('div');
+            jobActions.className = 'job-actions';
+            jobActions.innerHTML = actionHtml; // Safe: generated from trusted data
+
+            item.appendChild(jobInfo);
+            item.appendChild(jobActions);
 
             list.appendChild(item);
         });

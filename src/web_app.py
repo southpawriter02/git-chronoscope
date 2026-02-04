@@ -18,12 +18,16 @@ from flask import Flask, render_template, request, jsonify, send_file
 from src.git_utils import GitRepo
 from src.frame_renderer import FrameRenderer
 from src.video_encoder import VideoEncoder
+from src.input_sanitizer import InputSanitizer
 
 app = Flask(__name__, 
             template_folder='../templates',
             static_folder='../static')
 app.config['MAX_CONTENT_LENGTH'] = 500 * 1024 * 1024  # 500MB max upload
 app.config['UPLOAD_FOLDER'] = tempfile.mkdtemp()
+
+# Initialize Input Sanitizer
+sanitizer = InputSanitizer(strict_mode=True)
 
 # Store job status in memory (in production, use Redis or database)
 # Note: Jobs are lost on server restart in development mode
@@ -184,6 +188,11 @@ def get_branches():
         data = request.get_json()
         repo_path = data.get('repo_path')
         
+        # Sanitize path
+        repo_path, is_valid = sanitizer.sanitize_path(repo_path)
+        if not is_valid:
+             return jsonify({'error': 'Invalid repository path (potential security risk)'}), 400
+
         if not repo_path or not os.path.exists(repo_path):
             return jsonify({'error': 'Invalid repository path'}), 400
         
@@ -202,9 +211,29 @@ def generate():
         data = request.get_json()
         repo_path = data.get('repo_path')
         
+        # Sanitize path
+        repo_path, is_valid = sanitizer.sanitize_path(repo_path)
+        if not is_valid:
+             return jsonify({'error': 'Invalid repository path (potential security risk)'}), 400
+
         if not repo_path or not os.path.exists(repo_path):
             return jsonify({'error': 'Invalid repository path'}), 400
         
+        # Sanitize branch if present
+        branch = data.get('branch')
+        if branch:
+            branch, is_valid = sanitizer.sanitize_branch_name(branch)
+            if not is_valid:
+                return jsonify({'error': 'Invalid branch name'}), 400
+
+        # Sanitize patterns
+        for pattern_list in [data.get('include_patterns'), data.get('exclude_patterns')]:
+            if pattern_list:
+                for pattern in pattern_list:
+                    _, is_valid = sanitizer.sanitize_pattern(pattern)
+                    if not is_valid:
+                        return jsonify({'error': f'Invalid pattern: {pattern}'}), 400
+
         # Generate job ID
         job_id = f"{int(time.time())}_{len(jobs)}"
         
@@ -221,7 +250,7 @@ def generate():
         # Create job
         options = {
             'format': data.get('format', 'mp4'),
-            'branch': data.get('branch'),
+            'branch': branch,
             'fps': int(data.get('fps', 2)),
             'resolution': data.get('resolution', '1080p'),
             'width': width,
@@ -255,8 +284,28 @@ def preview():
         data = request.get_json()
         repo_path = data.get('repo_path')
 
+        # Sanitize path
+        repo_path, is_valid = sanitizer.sanitize_path(repo_path)
+        if not is_valid:
+             return jsonify({'error': 'Invalid repository path (potential security risk)'}), 400
+
         if not repo_path or not os.path.exists(repo_path):
             return jsonify({'error': 'Invalid repository path'}), 400
+
+        # Sanitize branch if present
+        branch = data.get('branch')
+        if branch:
+            branch, is_valid = sanitizer.sanitize_branch_name(branch)
+            if not is_valid:
+                return jsonify({'error': 'Invalid branch name'}), 400
+
+        # Sanitize patterns
+        for pattern_list in [data.get('include_patterns'), data.get('exclude_patterns')]:
+            if pattern_list:
+                for pattern in pattern_list:
+                    _, is_valid = sanitizer.sanitize_pattern(pattern)
+                    if not is_valid:
+                        return jsonify({'error': f'Invalid pattern: {pattern}'}), 400
 
         # Determine resolution
         width = None
@@ -288,7 +337,7 @@ def preview():
         git_repo = GitRepo(repo_path)
 
         # Get latest commit from the specified branch (or current)
-        history = git_repo.get_commit_history(branch=data.get('branch'))
+        history = git_repo.get_commit_history(branch=branch)
         if not history:
              return jsonify({'error': 'No commits found'}), 400
 
